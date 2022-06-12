@@ -145,7 +145,7 @@ ds.as[ShortData].printSchema
 //  |-- f3: string (nullable = true)
 //  |-- f4: string (nullable = true)
 ```
-This is due to Dataset[T].as[U] being lazy. Adding a transformation (even a transformation doing nothing!) will fix the issue:
+This is due to `Dataset[T].as[U]` being lazy. Adding a transformation (even a transformation doing nothing!) will fix the issue:
 ```scala
 ds.as[ShortData].map(identity).show
 // will output:
