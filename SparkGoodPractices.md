@@ -1,7 +1,9 @@
 # Spark - good practices: some common caveats and solutions
 
-##never collect a dataset
-##evaluate as little as possible
+## never collect a dataset
+
+## evaluate as little as possible
+
 From the Spark ScalaDoc
 `Operations available on Datasets are divided into transformations and actions. Transformations are the ones that produce new Datasets, and actions are the ones that trigger computation and return results
 (...)
@@ -23,7 +25,7 @@ ds.collect.foreach(println)
 ```
 ----------------------------------------------------------------------------------------------------
 The simplest and preferable solution would be to skip the print, but if it is absolutely necessary you can use accumulators instead
-`scala
+```scala
 val accum = sc.longAccumulator("num elements in ds")
 val ds = ds.map({ line =>
     accum.add(1)
@@ -34,18 +36,18 @@ ds.collect.foreach(println)
 println("num elements: " + accum.value)
 ```
 
-##use built-in functions rather than UDF
+## use built-in functions rather than UDF
 
-##manage wisely the number of partitions
+## manage wisely the number of partitions
 
-##deactivate unnecessary cache
+## deactivate unnecessary cache
 
-##always specify schema when reading file (parquet, json or csv) into a DataFrame
+## always specify schema when reading file (parquet, json or csv) into a DataFrame
 
-##avoid union performance penalties
+## avoid union performance penalties
 
-##prefer select over withColumn
+## prefer select over withColumn
 
-##(Scala/Java) remove extra columns when converting to a Dataset by providing a class
+## (Scala/Java) remove extra columns when converting to a Dataset by providing a class
 
-##(Scala) Prefer immutable variables
+## (Scala) Prefer immutable variables
