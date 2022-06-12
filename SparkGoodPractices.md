@@ -35,10 +35,17 @@ println("num elements: " + accum.value)
 ```
 
 ##use built-in functions rather than UDF
+
 ##manage wisely the number of partitions
+
 ##deactivate unnecessary cache
+
 ##always specify schema when reading file (parquet, json or csv) into a DataFrame
+
 ##avoid union performance penalties
+
 ##prefer select over withColumn
+
 ##(Scala/Java) remove extra columns when converting to a Dataset by providing a class
+
 ##(Scala) Prefer immutable variables
