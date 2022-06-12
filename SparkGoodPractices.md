@@ -81,11 +81,11 @@ ds.show
 val localFile = "file:///home/cpreaud/output/test_schema_change"
 ds.repartition(1).write.mode(SaveMode.Overwrite).parquet(localFile)
 ```
-Now let's add a new field comment in case class `TestData`
+Now let's add a new field `comment` in case class `TestData`
 ```scala
 case class TestData(id: Long, desc: String, comment: String)
 ```
-We hit an error when we try to map the parquet file dataset to the new definition of `TestData`, because the schema of the parquet file and the schema of TestData do not match anymore:
+We hit an error when we try to map the parquet file loaded as a dataset to the new definition of `TestData`, because the schema of the parquet file and the schema of `TestData` do not match anymore:
 ```scala
 val dsRead = spark.read.parquet(localFile).as[TestData]
 // will output:
@@ -97,7 +97,7 @@ It works correctly if the schema is enforced when the parquet file is read:
 ```scala
 import org.apache.spark.sql.Encoders
 val schema = Encoders.product[TestData].schema
-val dsRead = spark.read.schema(schema).parquet("file:///home/cpreaud/output/test_schema_change").as[TestData]
+val dsRead = spark.read.schema(schema).parquet(localFile).as[TestData]
 dsRead.show
 // will output:
 // +---+----+-------+
@@ -115,6 +115,54 @@ dsRead.show
 
 ## prefer select over withColumn
 
-## (Scala/Java) remove extra columns when converting to a Dataset by providing a class
+## remove extra columns when mapping a Dataset to a case class with fewver columns
+
+When a Dataset[T] is mapped to Dataset[U] (`Dataset[T].as[U]`), with U being a subclass of T with fewer columns, the resulting dataset still contains the extra columns.
+
+Let's illustrate this with an example:
+```scala
+case class Data(f1: String, f2: String, f3: String, f4: String)
+val ds = Seq(Data("a", "b", "c", "d"), Data("e", "f", "g", "h"), Data("i", "j", "k", "l")).toDS
+case class ShortData(f1: String, f2: String, f3: String)
+ds.as[ShortData].show
+// will output:
+// +---+---+---+---+
+// | f1| f2| f3| f4|
+// +---+---+---+---+
+// |  a|  b|  c|  d|
+// |  e|  f|  g|  h|
+// |  i|  j|  k|  l|
+// +---+---+---+---+
+```
+
+We would have expected only columns `f1`, `f2` and `f3`, but in fact, even the schema still contain the extra column `f4`!
+```scala
+ds.as[ShortData].printSchema
+// will output:
+// root
+//  |-- f1: string (nullable = true)
+//  |-- f2: string (nullable = true)
+//  |-- f3: string (nullable = true)
+//  |-- f4: string (nullable = true)
+```
+This is due to Dataset[T].as[U] being lazy. Adding a transformation (even a transformation doing nothing!) will fix the issue:
+```scala
+ds.as[ShortData].map(identity).show
+// will output:
+// +---+---+---+
+// | f1| f2| f3|
+// +---+---+---+
+// |  a|  b|  c|
+// |  e|  f|  g|
+// |  i|  j|  k|
+// +---+---+---+
+
+ds.as[ShortData].map(identity).printSchema
+// will output:
+// root
+//  |-- f1: string (nullable = true)
+//  |-- f2: string (nullable = true)
+//  |-- f3: string (nullable = true)
+```
 
 ## (Scala) Prefer immutable variables
