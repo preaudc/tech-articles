@@ -140,8 +140,8 @@ fs.globStatus(new Path("/path/to/sale/data/*/2022/202203/202203*"))
 &rarr; Took 12 min
 
 Let's have a look at the Spark UI for more understanding on what's going on:
-- the DAG for the union of Datasets is huge (the image below display only a small part of the DAG) ![](images/Spark_DAG_big_union_1.png)
-- analyzing this complex DAG takes time: there is a big pause at the start of the application ![](images/Spark_DAG_big_union_2.png)
+- the DAG for the union of Datasets is huge (the image below display only a small part of the DAG) <div>![](images/Spark_DAG_big_union_1.png)</div>
+- analyzing this complex DAG takes time: there is a big pause at the start of the application <div>![](images/Spark_DAG_big_union_2.png)</div>
 
 Now load all parquet files at once into a single Dataset:
 ```scala
