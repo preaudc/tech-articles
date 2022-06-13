@@ -156,8 +156,9 @@ spark.read
 ```
 &rarr; Took 2.1 min
 
---> single read from a list of parquet files: much quicker
---> simple DAG
+The Spark UI confirms that things are better now:
+- the DAG is now very simple ![](images/Spark_DAG_no_union_1.png)
+- there is no pause at the start of the application ![](images/Spark_DAG_no_union_2.png)
 
 ## prefer select over withColumn
 
