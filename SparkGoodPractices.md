@@ -132,7 +132,7 @@ fs.globStatus(new Path("/path/to/sale/data/*/2022/202203/202203*"))
 ```
 &rarr; Took 12 min
 
-[[/images/Spark_DAG_big_union_1.png]]
+[[https://github.com/preaudc/tech-articles/blob/gh-pages/images/Spark_DAG_big_union_1.png|Spark complex DAG]]
 
 - multiple reads from a list of parquet files and union: much longer
 - complex DAG: big pause at the start of the application
