@@ -124,13 +124,13 @@ import SaleRecord
 val fs = FileSystem.get(sc.hadoopConfiguration)
 val saleSchema = Encoders.product[SaleRecord].schema
 
-fs.globStatus(new Path("/path/to/sale/data/fr/2022/202204/202204*"))
+fs.globStatus(new Path("/path/to/sale/data/*/2022/202203/202203*"))
     .map(_.getPath.toString)
     .foldLeft(spark.emptyDataset[SaleRecord])((acc, path) =>
     acc.union(spark.read.schema(saleSchema).parquet(path).as[SaleRecord])
 ).count
 ```
-&rarr; Took 30 sec
+&rarr; Took 12 min
 
 
 Load all parquet files at once into a single Dataset:
@@ -143,7 +143,7 @@ val fs = FileSystem.get(sc.hadoopConfiguration)
 val saleSchema = Encoders.product[SaleRecord].schema
 
 val listSales = fs
-  .globStatus(new Path("/path/to/sale/data/fr/2022/202204/202204*"))
+  .globStatus(new Path("/path/to/sale/data/*/2022/202203/202203*"))
   .map(_.getPath.toString)
 spark.read
   .schema(saleSchema)
@@ -151,7 +151,7 @@ spark.read
   .as[SaleRecord]
   .count
 ```
-&rarr; Took 13 sec
+&rarr; Took 2.1 min
 
 ## prefer select over withColumn
 
