@@ -112,7 +112,7 @@ dsRead.show
 ```
 
 ## avoid union performance penalties when reading parquet files
-Doing a `union` to produce a single Dataset from several parquet files loaded as a Dataset takes a lot more time than load all the parquet files into a single Dataset in one go.
+Doing a `union` to produce a single Dataset from several parquet files loaded as a Dataset takes a lot more time than loading all the parquet at once files into a single Dataset.
 
 
 ```scala
