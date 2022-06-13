@@ -1,6 +1,6 @@
 # Spark - good practices: some common caveats and solutions
 
-## never collect a dataset
+## never collect a Dataset
 
 Never collect - quoted from the scaladoc:
 
@@ -85,7 +85,7 @@ Now let's add a new field `comment` in case class `TestData`
 ```scala
 case class TestData(id: Long, desc: String, comment: String)
 ```
-We hit an error when we try to map the parquet file loaded as a dataset to the new definition of `TestData`, because the schema of the parquet file and the schema of `TestData` do not match anymore:
+We hit an error when we try to map the parquet file loaded as a Dataset to the new definition of `TestData`, because the schema of the parquet file and the schema of `TestData` do not match anymore:
 ```scala
 val dsRead = spark.read.parquet(localFile).as[TestData]
 // will output:
@@ -111,19 +111,51 @@ dsRead.show
 // +---+----+-------+
 ```
 
-## avoid union performance penalties
+## avoid union performance penalties when reading parquet files
+Doing a `union` to produce a single Dataset from several parquet files loaded as a Dataset takes a lot more time than load all the parquet files into a single Dataset in one go.
+
+
+```scala
+import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.spark.sql.Encoders
+import kelkoo.log.sales.SaleRecord
+
+val fs = FileSystem.get(sc.hadoopConfiguration)
+val kelkooSalesFile = "/path/to/data/fr/2022/202204/202204*"
+val saleSchema = Encoders.product[SaleRecord].schema
+
+fs.globStatus(new Path(kelkooSalesFile))
+    .map(_.getPath.toString)
+    .foldLeft(spark.emptyDataset[SaleRecord])((acc, path) =>
+    acc.union(spark.read.schema(saleSchema).parquet(path).as[SaleRecord].map(identity))
+).count
+```
+&rarr; Took 30 sec
+
+```scala
+val listSales = fs.globStatus(new Path("/path/to/data/fr/2022/202204/202204*")).map(_.getPath.toString)
+spark.read
+  .schema(saleSchema)
+  .parquet(listSales:_*)
+  .as[SaleRecord]
+  .map(identity)
+  .count
+```
+&rarr; Took 13 sec
 
 ## prefer select over withColumn
 
 ## remove extra columns when mapping a Dataset to a case class with fewer columns
 
-When a Dataset[T] is mapped to Dataset[U] (`Dataset[T].as[U]`), with U being a subclass of T with fewer columns, the resulting dataset still contains the extra columns.
+When a Dataset[T] is mapped to Dataset[U] (`Dataset[T].as[U]`), with U being a subclass of T with fewer columns, the resulting Dataset will still contain the extra columns.
 
 Let's illustrate this with an example:
 ```scala
 case class Data(f1: String, f2: String, f3: String, f4: String)
-val ds = Seq(Data("a", "b", "c", "d"), Data("e", "f", "g", "h"), Data("i", "j", "k", "l")).toDS
+
 case class ShortData(f1: String, f2: String, f3: String)
+
+val ds = Seq(Data("a", "b", "c", "d"), Data("e", "f", "g", "h"), Data("i", "j", "k", "l")).toDS
 ds.as[ShortData].show
 // will output:
 // +---+---+---+---+
