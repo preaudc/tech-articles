@@ -112,27 +112,43 @@ dsRead.show
 ```
 
 ## avoid union performance penalties when reading parquet files
-Doing a `union` to produce a single Dataset from several parquet files loaded as a Dataset takes a lot more time than loading all the parquet files at once into a single Dataset.
 
+Doing a `union` to produce a single Dataset from several parquet files loaded as Datasets takes a lot more time than loading all the parquet files at once into a single Dataset.
+
+Load each parquet file into a Dataset and union all these Datasets to produce a single Dataset:
 ```scala
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.Encoders
+import SaleRecord
 
 val fs = FileSystem.get(sc.hadoopConfiguration)
-fs.globStatus(new Path("/path/to/data/fr/2022/202204/202204*))
+val saleSchema = Encoders.product[SaleRecord].schema
+
+fs.globStatus(new Path("/path/to/sale/data/fr/2022/202204/202204*"))
     .map(_.getPath.toString)
     .foldLeft(spark.emptyDataset[SaleRecord])((acc, path) =>
-    acc.union(spark.read.parquet(path))
+    acc.union(spark.read.schema(saleSchema).parquet(path).as[SaleRecord])
 ).count
 ```
 &rarr; Took 30 sec
 
+
+Load all parquet files at once into a single Dataset:
 ```scala
-val listSales = fs.
-  globStatus(new Path("/path/to/data/fr/2022/202204/202204*"))
+import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.spark.sql.Encoders
+import SaleRecord
+
+val fs = FileSystem.get(sc.hadoopConfiguration)
+val saleSchema = Encoders.product[SaleRecord].schema
+
+val listSales = fs
+  .globStatus(new Path("/path/to/sale/data/fr/2022/202204/202204*"))
   .map(_.getPath.toString)
 spark.read
+  .schema(saleSchema)
   .parquet(listSales:_*)
+  .as[SaleRecord]
   .count
 ```
 &rarr; Took 13 sec
