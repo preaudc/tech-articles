@@ -28,7 +28,7 @@ Though it is not alway possible, the ideal would be to call an action on your Da
 
 For example, doing a count (which is an action) for log printing should be avoided.
 
-`ds` is computed twice in the exemple below:
+`dsOut` is computed twice in the exemple below:
 ```scala
 case class Data(id: Long, desc: String, price: Double)
 val ds = Seq(Data(1, "a", 123), Data(2, "b", 234), Data(3, "c", 345), Data(4, "a", 234), Data(5, "a", 345), Data(6, "b", 123), Data(7, "a", 234), Data(8, "c", 345), Data(9, "a", 234), Data(10, "b", 234)).toDS
@@ -36,8 +36,8 @@ val ds = Seq(Data(1, "a", 123), Data(2, "b", 234), Data(3, "c", 345), Data(4, "a
 val dsOut = ds.map({ line =>
    line.copy(desc = s"this is a '${line.desc}'")
 })
-println(s"num elements: ${dsOut.count}")  // first ds computation
-dsOut.show                                // second ds computation
+println(s"num elements: ${dsOut.count}")  // first dsOut computation
+dsOut.show                                // second dsOut computation
 ```
 The simplest and preferable solution would be to skip the print, but if it is absolutely necessary you can use accumulators instead:
 ```scala
@@ -47,7 +47,7 @@ val dsOut = ds.map({ line =>
    line.copy(desc = s"this is a '${line.desc}'")
 })
 
-dsOut.show  // single ds computation
+dsOut.show  // single dsOut computation
 println(s"num elements: ${accum.value}")
 ```
 
