@@ -157,6 +157,9 @@ spark.read
 &rarr; Took 2.1 min
 
 The Spark UI confirms that things are better now:
+- the DAG for the union of Datasets is huge (the image below display only a small part of the DAG) ![](images/Spark_DAG_no_union_1.png)
+- analyzing this complex DAG takes time: there is a big pause at the start of the application ![](images/Spark_DAG_no_union_2.png)
+
 - the DAG is now very simple ![](images/Spark_DAG_no_union_1.png)
 - there is no pause at the start of the application ![](images/Spark_DAG_no_union_2.png)
 
