@@ -157,7 +157,7 @@ spark.read
 &rarr; Took 2.1 min
 
 The Spark UI confirms that things are better now:
-- the DAG is now very simple&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;![](images/Spark_DAG_no_union_1.png)
+- the DAG is now very simple &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ![](images/Spark_DAG_no_union_1.png)
 - there is no pause at the start of the application ![](images/Spark_DAG_no_union_2.png)
 
 ## prefer select over withColumn
