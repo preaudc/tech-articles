@@ -115,7 +115,7 @@ dsRead.show
 
 ## prefer select over withColumn
 
-## remove extra columns when mapping a Dataset to a case class with fewver columns
+## remove extra columns when mapping a Dataset to a case class with fewer columns
 
 When a Dataset[T] is mapped to Dataset[U] (`Dataset[T].as[U]`), with U being a subclass of T with fewer columns, the resulting dataset still contains the extra columns.
 
