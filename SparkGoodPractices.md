@@ -7,7 +7,8 @@ Never collect - quoted from the scaladoc:
 `(collect) should only be used if the resulting array is expected to be small, as all the data is loaded into the driver's memory`
 
 ```scala
-ds.collect()  // NOT OK - is long and has a good change of crashing the driver, unless ds is small
+ds.collect()  // NOT OK - is long and has a good change
+              // of crashing the driver, unless ds is small
 
 ds.show()     // OK - displays only the first 20 rows of ds
 
@@ -31,7 +32,11 @@ For example, doing a count (which is an action) for log printing should be avoid
 `dsOut` is computed twice in the exemple below:
 ```scala
 case class Data(id: Long, desc: String, price: Double)
-val ds = Seq(Data(1, "a", 123), Data(2, "b", 234), Data(3, "c", 345), Data(4, "a", 234), Data(5, "a", 345), Data(6, "b", 123), Data(7, "a", 234), Data(8, "c", 345), Data(9, "a", 234), Data(10, "b", 234)).toDS
+val ds = Seq(
+  Data(1, "a", 123), Data(2, "b", 234), Data(3, "c", 345),
+  Data(4, "a", 234), Data(5, "a", 345), Data(6, "b", 123),
+  Data(7, "a", 234), Data(8, "c", 345), Data(9, "a", 234),
+  Data(10, "b", 234)).toDS
 
 val dsOut = ds.map({ line =>
    line.copy(desc = s"this is a '${line.desc}'")
@@ -64,7 +69,9 @@ Let's begin with a Dataset mapped on case class `TestData`:
 case class TestData(id: Long, desc: String)
 import spark.implicits._
 import org.apache.spark.sql.SaveMode
-val ds = Seq(TestData(1L, "a"),TestData(2L, "b"),TestData(3L, "c"),TestData(4L, "d"),TestData(5L, "e")).toDS
+val ds = Seq(
+  TestData(1L, "a"), TestData(2L, "b"), TestData(3L, "c"),
+  TestData(4L, "d"), TestData(5L, "e")).toDS
 ds.show
 // will output:
 // +---+----+
@@ -172,7 +179,10 @@ case class Data(f1: String, f2: String, f3: String, f4: String)
 
 case class ShortData(f1: String, f2: String, f3: String)
 
-val ds = Seq(Data("a", "b", "c", "d"), Data("e", "f", "g", "h"), Data("i", "j", "k", "l")).toDS
+val ds = Seq(
+  Data("a", "b", "c", "d"), Data("e", "f", "g", "h"),
+  Data("i", "j", "k", "l")).toDS
+
 ds.as[ShortData].show
 // will output:
 // +---+---+---+---+
