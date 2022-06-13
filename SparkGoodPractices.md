@@ -140,7 +140,7 @@ fs.globStatus(new Path("/path/to/sale/data/*/2022/202203/202203*"))
 &rarr; Took 12 min
 
 Let's have a look at the Spark UI for more understanding on what's going on:
-- the DAG for the union of Datasets is huge (the image below display only a small part of the DAG) <img src="images/Spark_DAG_big_union_1.png" width="800px" height="402px"/>)
+- the DAG for the union of Datasets is huge (the image below display only a small part of the DAG) ![](images/Spark_DAG_big_union_1.png)
 - analyzing this complex DAG takes time: there is a big pause at the start of the application ![](images/Spark_DAG_big_union_2.png)
 
 Now load all parquet files at once into a single Dataset:
@@ -164,7 +164,7 @@ spark.read
 &rarr; Took 2.1 min
 
 The Spark UI confirms that things are better now:
-- the DAG is now very simple &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ![](images/Spark_DAG_no_union_1.png)
+- the DAG is now very simple <img src="images/Spark_DAG_no_union_1.png" width="800px" height="402px"/>)
 - there is no pause at the start of the application ![](images/Spark_DAG_no_union_2.png)
 
 ## prefer select over withColumn
