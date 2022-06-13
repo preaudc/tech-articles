@@ -132,13 +132,11 @@ fs.globStatus(new Path("/path/to/sale/data/*/2022/202203/202203*"))
 ```
 &rarr; Took 12 min
 
-![Spark complex DAG](images/Spark_DAG_big_union_1.png)
-![Big pause at the start of the application](images/Spark_DAG_big_union_2.png)
+Let's have a look at the Spark UI for more understanding on what's going on:
+- the DAG for the union of Datasets is huge (the image below display only a small part of the DAG) ![](images/Spark_DAG_big_union_1.png)
+- analyzing this complex DAG takes time: there is a big pause at the start of the application ![](images/Spark_DAG_big_union_2.png)
 
-- multiple reads from a list of parquet files and union: much longer
-- complex DAG: big pause at the start of the application
-
-Load all parquet files at once into a single Dataset:
+Now load all parquet files at once into a single Dataset:
 ```scala
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.Encoders
