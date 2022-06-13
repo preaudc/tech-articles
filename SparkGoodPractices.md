@@ -114,31 +114,25 @@ dsRead.show
 ## avoid union performance penalties when reading parquet files
 Doing a `union` to produce a single Dataset from several parquet files loaded as a Dataset takes a lot more time than loading all the parquet files at once into a single Dataset.
 
-
 ```scala
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.Encoders
-import kelkoo.log.sales.SaleRecord
 
 val fs = FileSystem.get(sc.hadoopConfiguration)
-val kelkooSalesFile = "/path/to/data/fr/2022/202204/202204*"
-val saleSchema = Encoders.product[SaleRecord].schema
-
-fs.globStatus(new Path(kelkooSalesFile))
+fs.globStatus(new Path("/path/to/data/fr/2022/202204/202204*))
     .map(_.getPath.toString)
     .foldLeft(spark.emptyDataset[SaleRecord])((acc, path) =>
-    acc.union(spark.read.schema(saleSchema).parquet(path).as[SaleRecord].map(identity))
+    acc.union(spark.read.parquet(path))
 ).count
 ```
 &rarr; Took 30 sec
 
 ```scala
-val listSales = fs.globStatus(new Path("/path/to/data/fr/2022/202204/202204*")).map(_.getPath.toString)
+val listSales = fs.
+  globStatus(new Path("/path/to/data/fr/2022/202204/202204*"))
+  .map(_.getPath.toString)
 spark.read
-  .schema(saleSchema)
   .parquet(listSales:_*)
-  .as[SaleRecord]
-  .map(identity)
   .count
 ```
 &rarr; Took 13 sec
