@@ -164,8 +164,8 @@ spark.read
 &rarr; Took 2.1 min
 
 The Spark UI confirms that things are better now:
-- the DAG is now very simple <img src="images/Spark_DAG_no_union_1.png" width="800px" height="402px"/>)
-- there is no pause at the start of the application ![](images/Spark_DAG_no_union_2.png)
+- the DAG is now very simple <div>![](images/Spark_DAG_no_union_1.png)</div>
+- there is no pause at the start of the application <div>![](images/Spark_DAG_no_union_2.png)</div>
 
 ## prefer select over withColumn
 
