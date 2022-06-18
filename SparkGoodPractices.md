@@ -64,7 +64,7 @@ Indeed, a Dataset[T] or DataFrame already contains a reference to the SparkSessi
 
 For example:
 ```scala
-def f(ds: Dataset[Strinh], spark: SparkSession) = {
+def f(ds: Dataset[String], spark: SparkSession) = {
   import spark.implicits._
   // ...
 }
