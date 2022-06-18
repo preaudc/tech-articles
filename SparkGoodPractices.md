@@ -57,6 +57,41 @@ println(s"num elements: ${accum.value}")
 
 ## deactivate unnecessary cache
 
+## avoid unnecessry SparkSession parameter
+
+It is not necessary to pass the SparkSession as a function parameter if this function already has a Dataset[T] or DataFrame parameter.
+Indeed, a Dataset[T] or DataFrame already contains a reference to the SparkSession.
+
+For example:
+```scala
+def f(ds: Dataset[Strinh], spark: SparkSession) = {
+  import spark.implicits._
+  // ...
+}
+```
+can be replaced by;
+```scala
+def f(ds: Dataset[String]) = {
+  import ds.sparkSession.implicits._
+  // ...
+}
+```
+
+Similarly:
+```scala
+def f(df: DataFrame, spark: SparkSession) = {
+  import spark.implicits._
+  // ...
+}
+```
+can be replaced by;
+```scala
+def f(df: DataFrame) = {
+  import df.sparkSession.implicits._
+  // ...
+}
+```
+
 ## always specify schema when reading file (parquet, json or csv) into a DataFrame
 
 Let's begin with a Dataset mapped on case class `TestData`:
