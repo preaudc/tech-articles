@@ -193,7 +193,10 @@ spark.read
 `withColumn` should be avoided when adding multiple columns. Quoted from [Spark source code](https://github.com/apache/spark/blob/v3.3.0/sql/core/src/main/scala/org/apache/spark/sql/Dataset.scala#L2472-L2475):
 
 ```
-[`withColumn`] introduces a projection internally. Therefore, calling it multiple times, for instance, via loops in order to add multiple columns can generate big plans which can cause performance issues and even `StackOverflowException`. To avoid this, use `select` with the multiple columns at once.`
+[`withColumn`] introduces a projection internally. Therefore, calling it multiple times,
+for instance, via loops in order to add multiple columns can generate big plans which
+can cause performance issues and even `StackOverflowException`. To avoid this,
+use `select` with the multiple columns at once.`
 ```
 
 ## remove extra columns when mapping a Dataset to a case class with fewer columns
