@@ -62,7 +62,7 @@ println(s"num elements: ${accum.value}")
 
 ## deactivate unnecessary cache
 
-## avoid unnecessry SparkSession parameter
+## avoid unnecessary SparkSession parameter
 
 It is not necessary to pass the SparkSession as a function parameter if this function already has a Dataset[T] or DataFrame parameter.
 Indeed, a Dataset[T] or DataFrame already contains a reference to the SparkSession.
