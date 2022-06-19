@@ -2,7 +2,7 @@
 
 Spark is a wonderful data engineering tool to process your data, whether in batches or real-time streaming.
 
-However it is also a complex tool which takes time knowing well.
+However Spark can be also quite complex, and it takes time exploiting it correctly.
 
 Here are below some common mistakes - and their solutions - and also some useful tips for making your work with Spark easier.
 
