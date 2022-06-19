@@ -56,12 +56,6 @@ dsOut.show  // single dsOut computation
 println(s"num elements: ${accum.value}")
 ```
 
-## use built-in functions rather than UDF
-
-## manage wisely the number of partitions
-
-## deactivate unnecessary cache
-
 ## avoid unnecessary SparkSession parameter
 
 It is not necessary to pass the SparkSession as a function parameter if this function already has a Dataset[T] or DataFrame parameter.
@@ -95,6 +89,61 @@ def f(df: DataFrame) = {
   import df.sparkSession.implicits._
   // ...
 }
+```
+
+## remove extra columns when mapping a Dataset to a case class with fewer columns
+
+When a Dataset[T] is mapped to Dataset[U] (`Dataset[T].as[U]`), with U being a subclass of T with fewer columns, the resulting Dataset will still contain the extra columns.
+
+Let's illustrate this with an example:
+```scala
+case class Data(f1: String, f2: String, f3: String, f4: String)
+
+case class ShortData(f1: String, f2: String, f3: String)
+
+val ds = Seq(
+  Data("a", "b", "c", "d"), Data("e", "f", "g", "h"),
+  Data("i", "j", "k", "l")).toDS
+
+ds.as[ShortData].show
+// will output:
+// +---+---+---+---+
+// | f1| f2| f3| f4|
+// +---+---+---+---+
+// |  a|  b|  c|  d|
+// |  e|  f|  g|  h|
+// |  i|  j|  k|  l|
+// +---+---+---+---+
+```
+
+We would have expected only columns `f1`, `f2` and `f3`, but in fact, even the schema still contain the extra column `f4`!
+```scala
+ds.as[ShortData].printSchema
+// will output:
+// root
+//  |-- f1: string (nullable = true)
+//  |-- f2: string (nullable = true)
+//  |-- f3: string (nullable = true)
+//  |-- f4: string (nullable = true)
+```
+This is due to `Dataset[T].as[U]` being lazy. Adding a transformation (even a transformation doing nothing!) will fix the issue:
+```scala
+ds.as[ShortData].map(identity).show
+// will output:
+// +---+---+---+
+// | f1| f2| f3|
+// +---+---+---+
+// |  a|  b|  c|
+// |  e|  f|  g|
+// |  i|  j|  k|
+// +---+---+---+
+
+ds.as[ShortData].map(identity).printSchema
+// will output:
+// root
+//  |-- f1: string (nullable = true)
+//  |-- f2: string (nullable = true)
+//  |-- f3: string (nullable = true)
 ```
 
 ## always specify schema when reading file (parquet, json or csv) into a DataFrame
@@ -268,59 +317,10 @@ df.select((
 
 N.B.: always prefer the `select` implementation when adding multiple columns!
 
-## remove extra columns when mapping a Dataset to a case class with fewer columns
+## use built-in functions rather than UDF
 
-When a Dataset[T] is mapped to Dataset[U] (`Dataset[T].as[U]`), with U being a subclass of T with fewer columns, the resulting Dataset will still contain the extra columns.
+## manage wisely the number of partitions
 
-Let's illustrate this with an example:
-```scala
-case class Data(f1: String, f2: String, f3: String, f4: String)
-
-case class ShortData(f1: String, f2: String, f3: String)
-
-val ds = Seq(
-  Data("a", "b", "c", "d"), Data("e", "f", "g", "h"),
-  Data("i", "j", "k", "l")).toDS
-
-ds.as[ShortData].show
-// will output:
-// +---+---+---+---+
-// | f1| f2| f3| f4|
-// +---+---+---+---+
-// |  a|  b|  c|  d|
-// |  e|  f|  g|  h|
-// |  i|  j|  k|  l|
-// +---+---+---+---+
-```
-
-We would have expected only columns `f1`, `f2` and `f3`, but in fact, even the schema still contain the extra column `f4`!
-```scala
-ds.as[ShortData].printSchema
-// will output:
-// root
-//  |-- f1: string (nullable = true)
-//  |-- f2: string (nullable = true)
-//  |-- f3: string (nullable = true)
-//  |-- f4: string (nullable = true)
-```
-This is due to `Dataset[T].as[U]` being lazy. Adding a transformation (even a transformation doing nothing!) will fix the issue:
-```scala
-ds.as[ShortData].map(identity).show
-// will output:
-// +---+---+---+
-// | f1| f2| f3|
-// +---+---+---+
-// |  a|  b|  c|
-// |  e|  f|  g|
-// |  i|  j|  k|
-// +---+---+---+
-
-ds.as[ShortData].map(identity).printSchema
-// will output:
-// root
-//  |-- f1: string (nullable = true)
-//  |-- f2: string (nullable = true)
-//  |-- f3: string (nullable = true)
-```
+## deactivate unnecessary cache
 
 ## (Scala) Prefer immutable variables
