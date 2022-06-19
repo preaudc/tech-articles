@@ -1,5 +1,11 @@
 # Spark - good practices: some common caveats and solutions
 
+Spark is a wonderful data engineering tool to process your data, whether in batches or real-time streaming.
+
+However it is also a complex tool which takes time knowing well.
+
+Here are below some common mistakes - and their solutions - and also some useful tips for making your work with Spark easier.
+
 ## never collect a Dataset
 
 Never collect - quoted from the scaladoc:
@@ -146,7 +152,7 @@ ds.as[ShortData].map(identity).printSchema
 //  |-- f3: string (nullable = true)
 ```
 
-## always specify schema when reading file (parquet, json or csv) into a DataFrame
+## always specify schema when reading files (parquet, json or csv) into a DataFrame
 
 Let's begin with a Dataset mapped on case class `TestData`:
 ```scala
@@ -324,3 +330,9 @@ N.B.: always prefer the `select` implementation when adding multiple columns!
 ## deactivate unnecessary cache
 
 ## (Scala) Prefer immutable variables
+
+## About the author
+
+Christophe Préaud is Lead data engineer & technical referent in the data-platform team at Kelkoo Group.
+
+You can connect with him on [LinkedIn](https://www.linkedin.com/in/christophe-pr%C3%A9aud-184023155).
