@@ -13,7 +13,7 @@ Never collect - quoted from the scaladoc:
 `(collect) should only be used if the resulting array is expected to be small, as all the data is loaded into the driver's memory`
 
 ```scala
-ds.collect()  // NOT OK - is long and has a good change
+ds.collect()  // NOT OK - is long and has a good chance
               // of crashing the driver, unless ds is small
 
 ds.show()     // OK - displays only the first 20 rows of ds
