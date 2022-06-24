@@ -1,8 +1,8 @@
 # Spark - good practices: some common caveats and solutions
 
-Spark is a wonderful data engineering tool to process your data, whether in batches or real-time streaming.
+Spark is an open source scalable engine to process your data, whether in batches or real-time streaming.
 
-However Spark can be also quite complex, and it takes time exploiting it correctly.
+It has become widely popular, however it can be also quite complex, and it takes time exploiting it correctly.
 
 Here are below some common mistakes - and their solutions - and also some useful tips for making your work with Spark easier.
 
@@ -74,7 +74,7 @@ def f(ds: Dataset[String], spark: SparkSession) = {
   // ...
 }
 ```
-can be replaced by;
+can be replaced by:
 ```scala
 def f(ds: Dataset[String]) = {
   import ds.sparkSession.implicits._
@@ -89,7 +89,7 @@ def f(df: DataFrame, spark: SparkSession) = {
   // ...
 }
 ```
-can be replaced by;
+can be replaced by:
 ```scala
 def f(df: DataFrame) = {
   import df.sparkSession.implicits._
@@ -330,6 +330,10 @@ N.B.: always prefer the `select` implementation when adding multiple columns!
 ## deactivate unnecessary cache
 
 ## (Scala) Prefer immutable variables
+
+## A few final words
+
+Spark versatility comes with a certain level of complexity, I hope that this article will help you writing better applications.
 
 ## About the author
 
