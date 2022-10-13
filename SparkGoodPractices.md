@@ -182,7 +182,7 @@ Now let's add a new field `comment` in case class `TestData`
 ```scala
 case class TestData(id: Long, desc: String, comment: String)
 ```
-We hit an error when we try to map the parquet file loaded as a Dataset to the new definition of `TestData`, because the schema of the parquet file and the schema of `TestData` do not match anymore:
+We're hitting an error when we try to map the parquet file loaded as a Dataset to the new definition of `TestData`, because the schema of the parquet file and the schema of `TestData` do not match anymore:
 ```scala
 val dsRead = spark.read.parquet(localFile).as[TestData]
 // will output:
@@ -212,7 +212,7 @@ dsRead.show
 
 Doing a `union` to produce a single Dataset from several parquet files loaded as Datasets takes a lot more time than loading all the parquet files at once into a single Dataset.
 
-Load each parquet file into a Dataset and union all these Datasets to produce a single Dataset:
+Let's load each parquet file into a Dataset and union all these Datasets to produce a single Dataset:
 ```scala
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.Encoders
@@ -236,7 +236,7 @@ Let's have a look at the Spark UI for more understanding on what's going on.
 - analyzing this complex DAG takes time: there is a big pause at the start of the application:
 <div><img src="images/Spark_DAG_big_union_2.png"/></div>
 
-Now load all parquet files at once into a single Dataset:
+Now let's load all parquet files at once into a single Dataset:
 ```scala
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.Encoders
@@ -254,10 +254,10 @@ spark.read
   .as[SaleRecord]
   .count
 ```
-&rarr; Took 2.1 min
+&rarr; Took only 2.1 min
 
 The Spark UI confirms that things are better now.
-- the DAG is very simple:
+- the DAG is very simple as you can see:
 <div><img src="images/Spark_DAG_no_union_1.png"/></div>
 
 - there is no pause at the start of the application:
