@@ -8,7 +8,7 @@ Here are below some common mistakes - and their solutions - and also some useful
 
 ## never collect a Dataset
 
-Never collect - quoted from the scaladoc:
+Never collect - quoted from the Spark Scaladoc:
 
 `(collect) should only be used if the resulting array is expected to be small, as all the data is loaded into the driver's memory`
 
@@ -23,7 +23,7 @@ ds.write.parquet(...)  // OK - saves the content of ds out into external storage
 
 ## evaluate as little as possible
 
-From the Spark ScalaDoc:
+Quoted from the Spark Scaladoc:
 
 `Operations available on Datasets are divided into transformations and actions. Transformations are the ones that produce new Datasets, and actions are the ones that trigger computation and return results
 (...)
