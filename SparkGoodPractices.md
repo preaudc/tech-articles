@@ -31,7 +31,7 @@ Datasets are "lazy", i.e. computations are only triggered when an action is invo
 
 In other words, you should limit the number of actions you apply on your Dataset, since each action will trigger a costly computation, while all transformations are lazily evaluated.
 
-Though it is not alway possible, the ideal would be to call an action on your Dataset only once. Nevertheless, avoid calling an action on your Dataset unless it is necessary.
+Though it is not always possible, the ideal would be to call an action on your Dataset only once. Nevertheless, avoid calling an action on your Dataset unless it is necessary.
 
 For example, doing a count (which is an action) for log printing should be avoided.
 
