@@ -13,3 +13,11 @@
 ## avoid union performance penalties when reading parquet files
 
 ## prefer select over withColumn when adding multiple columns
+
+## use built-in functions rather than UDF
+
+## manage wisely the number of partitions
+
+## deactivate unnecessary cache
+
+## (Scala) Prefer immutable variables
