@@ -323,14 +323,6 @@ df.select((
 
 N.B.: always prefer the `select` implementation when adding multiple columns!
 
-## use built-in functions rather than UDF
-
-## manage wisely the number of partitions
-
-## deactivate unnecessary cache
-
-## (Scala) Prefer immutable variables
-
 ## A few final words
 
 Spark versatility comes with a certain level of complexity, I hope that this article will help you writing better applications.
