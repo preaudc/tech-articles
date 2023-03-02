@@ -16,14 +16,14 @@
   - the data is copied back into RAM on the destination executor
 
 ## Example: Write Job
-Step	Method	Operation
-1	Read	Narrow transformation
-2	Filter	Narrow transformation
-3	Map	Narrow transformation
-4	GroupBy	Wide transformation
-5	Filter	Narrow transformation
-6	Map	Narrow transformation
-7	Write	Action
+| Step | Method  | Operation             |      
+| 1    | Read    | Narrow transformation |
+| 2    | Filter  | Narrow transformation |
+| 3    | Map     | Narrow transformation |
+| 4    | GroupBy | Wide transformation   |
+| 5    | Filter  | Narrow transformation |
+| 6    | Map     | Narrow transformation |
+| 7    | Write   | Action                |
 
 Step 4 is a stage boundary: a new stage is created to process all remaining Steps (5, 6, 7).
 
@@ -32,22 +32,22 @@ The synchronization between Tasks is done with a shuffle operation (i.e. data is
 Hence, the Write job will be broken down into two stages:
 
 Stage 1
-Step	Method
-1	Read
-2	Filter
-3	Map
-4a	GroupBy 1/2
-4b	shuffle write
+Step Method
+1 Read
+2 Filter
+3 Map
+4a GroupBy 1/2
+4b shuffle write
 
 Step 4 is a stage boundary: all the Tasks must synchronize (i.e. all partitions must complete Stage 1 before continuing to Stage 2).
 
 Stage 2
-Step	Method
-4c	shuffle read
-4d	GroupBy 2/2
-5	Filter
-6	Map
-7	Write
+Step Method
+4c shuffle read
+4d GroupBy 2/2
+5 Filter
+6 Map
+7 Write
 
 
 In more details:
