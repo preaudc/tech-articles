@@ -1,5 +1,9 @@
 # Spark: Jobs and Stages
 
+Spark is an open source scalable engine to process your data, whether in batches or real-time streaming.
+
+In order to optimize performance and resource usage, you have to understand how Spark processes your data and more specifically how it splits its work into jobs and stages.
+
 ## Glossary
 
 - <ins>Transformation</ins>: lazy evaluated Dataset operation which returns a Dataset (see ***Typed transformations*** and ***Untyped transformations*** in the [Spark Dataset scaladoc](http://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.sql.Dataset))
