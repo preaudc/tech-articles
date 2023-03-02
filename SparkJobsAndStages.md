@@ -16,6 +16,7 @@
   - the data is copied back into RAM on the destination executor
 
 ## Example: Write Job
+
 | Step | Method  | Operation             |
 | :--: | :----:  | :-------------------: |
 | 1    | Read    | Narrow transformation |
@@ -33,6 +34,7 @@ The synchronization between Tasks is done with a shuffle operation (i.e. data is
 Hence, the Write job will be broken down into two stages:
 
 ### Stage 1
+
 | Step    | Method        |
 | :--:    | :-----------: |
 | 1       | Read          |
@@ -44,6 +46,7 @@ Hence, the Write job will be broken down into two stages:
 Step 4 is a stage boundary: all the Tasks must synchronize (i.e. all partitions must complete **Stage 1** before continuing to **Stage 2**).
 
 ### Stage 2
+
 | Step    | Method       |
 | :--:    | :----------: |
 | 4c      | shuffle read |
