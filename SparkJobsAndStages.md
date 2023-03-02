@@ -2,15 +2,15 @@
 
 ## Glossary
 
-- Transformation: lazy evaluated Dataset operation which returns a Dataset (see ***Typed transformations*** and ***Untyped transformations*** in the [Spark Dataset scaladoc](http://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.sql.Dataset))
+- <ins>Transformation</ins>: lazy evaluated Dataset operation which returns a Dataset (see ***Typed transformations*** and ***Untyped transformations*** in the [Spark Dataset scaladoc](http://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.sql.Dataset))
   - Narrow transformation: The data required to compute the records in a single Partition resides in at most one Partition of the parent Dataset (no shuffle)
   - Wide transformation: The data required to compute the records in a single Partition may reside in many Partitions of the parent Dataset (i.e. it triggers a shuffle operation, see below)
-- Action: Dataset operation which returns a result to the driver (i.e. is evaluated and triggers the evaluation of previous transformations on the Dataset)
-- Task: a unit of work that will be sent to one executor and done by a single thread
-- Slot: the number of Tasks that can be processed simultaneously by the Spark application. The total number of Slots is ***number of executors × number of cores*** reserved for the Spark application
-- Job: several transformation(s) followed by (exactly) one action
-- Stage: several narrow transformations followed by (exactly) one wide transformation
-- Shuffle: a shuffle operation is triggered when data needs to be moved between executors:
+- <ins>Action</ins>: Dataset operation which returns a result to the driver (i.e. is evaluated and triggers the evaluation of previous transformations on the Dataset)
+- <ins>Task</ins>: a unit of work that will be sent to one executor and done by a single thread
+- <ins>Slot</ins>: the number of Tasks that can be processed simultaneously by the Spark application. The total number of Slots is ***number of executors × number of cores*** reserved for the Spark application
+- <ins>Job</ins>: several transformation(s) followed by (exactly) one action
+- <ins>Stage</ins>: several narrow transformations followed by (exactly) one wide transformation
+- <ins>Shuffle</ins>: a shuffle operation is triggered when data needs to be moved between executors:
   - data is written from RAM to local disk on the source executor
   - the data is sent to another executor (the driver decides which executor gets which piece of data)
   - the data is copied back into RAM on the destination executor
