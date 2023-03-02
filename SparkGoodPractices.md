@@ -1,13 +1,19 @@
 # Spark - good practices: some common caveats and solutions
 
+Spark is an open source scalable engine to process your data, whether in batches or real-time streaming.
+
+It has become widely popular, however it can be also quite complex, and it takes time exploiting it correctly.
+
+Here are below some common mistakes - and their solutions - and also some useful tips for making your work with Spark easier.
+
 ## never collect a Dataset
 
-Never collect - quoted from the scaladoc:
+Never collect - quoted from the Spark Scaladoc:
 
 `(collect) should only be used if the resulting array is expected to be small, as all the data is loaded into the driver's memory`
 
 ```scala
-ds.collect()  // NOT OK - is long and has a good change
+ds.collect()  // NOT OK - is long and has a good chance
               // of crashing the driver, unless ds is small
 
 ds.show()     // OK - displays only the first 20 rows of ds
@@ -17,7 +23,7 @@ ds.write.parquet(...)  // OK - saves the content of ds out into external storage
 
 ## evaluate as little as possible
 
-From the Spark ScalaDoc:
+Quoted from the Spark Scaladoc:
 
 `Operations available on Datasets are divided into transformations and actions. Transformations are the ones that produce new Datasets, and actions are the ones that trigger computation and return results
 (...)
@@ -25,7 +31,7 @@ Datasets are "lazy", i.e. computations are only triggered when an action is invo
 
 In other words, you should limit the number of actions you apply on your Dataset, since each action will trigger a costly computation, while all transformations are lazily evaluated.
 
-Though it is not alway possible, the ideal would be to call an action on your Dataset only once. Nevertheless, avoid calling an action on your Dataset unless it is necessary.
+Though it is not always possible, the ideal would be to call an action on your Dataset only once. Nevertheless, avoid calling an action on your Dataset unless it is necessary.
 
 For example, doing a count (which is an action) for log printing should be avoided.
 
@@ -56,124 +62,40 @@ dsOut.show  // single dsOut computation
 println(s"num elements: ${accum.value}")
 ```
 
-## use built-in functions rather than UDF
+## avoid unnecessary SparkSession parameter
 
-## manage wisely the number of partitions
+It is not necessary to pass the SparkSession as a function parameter if this function already has a Dataset[T] or DataFrame parameter.
+Indeed, a Dataset[T] or DataFrame already contains a reference to the SparkSession.
 
-## deactivate unnecessary cache
-
-## always specify schema when reading file (parquet, json or csv) into a DataFrame
-
-Let's begin with a Dataset mapped on case class `TestData`:
+For example:
 ```scala
-case class TestData(id: Long, desc: String)
-import spark.implicits._
-import org.apache.spark.sql.SaveMode
-val ds = Seq(
-  TestData(1L, "a"), TestData(2L, "b"), TestData(3L, "c"),
-  TestData(4L, "d"), TestData(5L, "e")).toDS
-ds.show
-// will output:
-// +---+----+
-// | id|desc|
-// +---+----+
-// |  1|   a|
-// |  2|   b|
-// |  3|   c|
-// |  4|   d|
-// |  5|   e|
-// +---+----+
-
-// save ds locally
-val localFile = "file:///home/cpreaud/output/test_schema_change"
-ds.repartition(1).write.mode(SaveMode.Overwrite).parquet(localFile)
+def f(ds: Dataset[String], spark: SparkSession) = {
+  import spark.implicits._
+  // ...
+}
 ```
-Now let's add a new field `comment` in case class `TestData`
+can be replaced by:
 ```scala
-case class TestData(id: Long, desc: String, comment: String)
-```
-We hit an error when we try to map the parquet file loaded as a Dataset to the new definition of `TestData`, because the schema of the parquet file and the schema of `TestData` do not match anymore:
-```scala
-val dsRead = spark.read.parquet(localFile).as[TestData]
-// will output:
-// org.apache.spark.sql.AnalysisException: cannot resolve 'comment' given input columns: [desc, id]
-//  at org.apache.spark.sql.catalyst.analysis.package$AnalysisErrorAt.failAnalysis(package.scala:54)
-// (...)
-```
-It works correctly if the schema is enforced when the parquet file is read:
-```scala
-import org.apache.spark.sql.Encoders
-val schema = Encoders.product[TestData].schema
-val dsRead = spark.read.schema(schema).parquet(localFile).as[TestData]
-dsRead.show
-// will output:
-// +---+----+-------+
-// | id|desc|comment|
-// +---+----+-------+
-// |  1|   a|   null|
-// |  2|   b|   null|
-// |  3|   c|   null|
-// |  4|   d|   null|
-// |  5|   e|   null|
-// +---+----+-------+
+def f(ds: Dataset[String]) = {
+  import ds.sparkSession.implicits._
+  // ...
+}
 ```
 
-## avoid union performance penalties when reading parquet files
-
-Doing a `union` to produce a single Dataset from several parquet files loaded as Datasets takes a lot more time than loading all the parquet files at once into a single Dataset.
-
-Load each parquet file into a Dataset and union all these Datasets to produce a single Dataset:
+Similarly:
 ```scala
-import org.apache.hadoop.fs.{FileSystem, Path}
-import org.apache.spark.sql.Encoders
-import SaleRecord
-
-val fs = FileSystem.get(sc.hadoopConfiguration)
-val saleSchema = Encoders.product[SaleRecord].schema
-
-fs.globStatus(new Path("/path/to/sale/data/*/2022/202203/202203*"))
-    .map(_.getPath.toString)
-    .foldLeft(spark.emptyDataset[SaleRecord])((acc, path) =>
-    acc.union(spark.read.schema(saleSchema).parquet(path).as[SaleRecord])
-).count
+def f(df: DataFrame, spark: SparkSession) = {
+  import spark.implicits._
+  // ...
+}
 ```
-&rarr; Took 12 min
-
-Let's have a look at the Spark UI for more understanding on what's going on.
-- the DAG for the union of Datasets is huge (the image below display only a small part of the DAG):
-<div><img src="images/Spark_DAG_big_union_1.png"/></div>
-
-- analyzing this complex DAG takes time: there is a big pause at the start of the application:
-<div><img src="images/Spark_DAG_big_union_2.png"/></div>
-
-Now load all parquet files at once into a single Dataset:
+can be replaced by:
 ```scala
-import org.apache.hadoop.fs.{FileSystem, Path}
-import org.apache.spark.sql.Encoders
-import SaleRecord
-
-val fs = FileSystem.get(sc.hadoopConfiguration)
-val saleSchema = Encoders.product[SaleRecord].schema
-
-val listSales = fs
-  .globStatus(new Path("/path/to/sale/data/*/2022/202203/202203*"))
-  .map(_.getPath.toString)
-spark.read
-  .schema(saleSchema)
-  .parquet(listSales:_*)
-  .as[SaleRecord]
-  .count
+def f(df: DataFrame) = {
+  import df.sparkSession.implicits._
+  // ...
+}
 ```
-&rarr; Took 2.1 min
-
-The Spark UI confirms that things are better now.
-- the DAG is very simple:
-<div><img src="images/Spark_DAG_no_union_1.png"/></div>
-
-- there is no pause at the start of the application:
-<div><img src="images/Spark_DAG_no_union_2.png"/></div>
-
-## prefer select over withColumn
 
 ## remove extra columns when mapping a Dataset to a case class with fewer columns
 
@@ -230,4 +152,183 @@ ds.as[ShortData].map(identity).printSchema
 //  |-- f3: string (nullable = true)
 ```
 
-## (Scala) Prefer immutable variables
+## always specify schema when reading files (parquet, json or csv) into a DataFrame
+
+Let's begin with a Dataset mapped on case class `TestData`:
+```scala
+case class TestData(id: Long, desc: String)
+import spark.implicits._
+import org.apache.spark.sql.SaveMode
+val ds = Seq(
+  TestData(1L, "a"), TestData(2L, "b"), TestData(3L, "c"),
+  TestData(4L, "d"), TestData(5L, "e")).toDS
+ds.show
+// will output:
+// +---+----+
+// | id|desc|
+// +---+----+
+// |  1|   a|
+// |  2|   b|
+// |  3|   c|
+// |  4|   d|
+// |  5|   e|
+// +---+----+
+
+// save ds locally
+val localFile = "file:///home/cpreaud/output/test_schema_change"
+ds.repartition(1).write.mode(SaveMode.Overwrite).parquet(localFile)
+```
+Now let's add a new field `comment` in case class `TestData`
+```scala
+case class TestData(id: Long, desc: String, comment: String)
+```
+We're hitting an error when we try to map the parquet file loaded as a Dataset to the new definition of `TestData`, because the schema of the parquet file and the schema of `TestData` do not match anymore:
+```scala
+val dsRead = spark.read.parquet(localFile).as[TestData]
+// will output:
+// org.apache.spark.sql.AnalysisException: cannot resolve 'comment' given input columns: [desc, id]
+//  at org.apache.spark.sql.catalyst.analysis.package$AnalysisErrorAt.failAnalysis(package.scala:54)
+// (...)
+```
+It works correctly if the schema is enforced when the parquet file is read:
+```scala
+import org.apache.spark.sql.Encoders
+val schema = Encoders.product[TestData].schema
+val dsRead = spark.read.schema(schema).parquet(localFile).as[TestData]
+dsRead.show
+// will output:
+// +---+----+-------+
+// | id|desc|comment|
+// +---+----+-------+
+// |  1|   a|   null|
+// |  2|   b|   null|
+// |  3|   c|   null|
+// |  4|   d|   null|
+// |  5|   e|   null|
+// +---+----+-------+
+```
+
+## avoid union performance penalties when reading parquet files
+
+Doing a `union` to produce a single Dataset from several parquet files loaded as Datasets takes a lot more time than loading all the parquet files at once into a single Dataset.
+
+Let's load each parquet file into a Dataset and union all these Datasets to produce a single Dataset:
+```scala
+import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.spark.sql.Encoders
+import SaleRecord
+
+val fs = FileSystem.get(sc.hadoopConfiguration)
+val saleSchema = Encoders.product[SaleRecord].schema
+
+fs.globStatus(new Path("/path/to/sale/data/*/2022/202203/202203*"))
+    .map(_.getPath.toString)
+    .foldLeft(spark.emptyDataset[SaleRecord])((acc, path) =>
+    acc.union(spark.read.schema(saleSchema).parquet(path).as[SaleRecord])
+).count
+```
+&rarr; Took 12 min
+
+Let's have a look at the Spark UI for more understanding on what's going on.
+- the DAG for the union of Datasets is huge (the image below display only a small part of the DAG):
+<div><img src="images/Spark_DAG_big_union_1.png"/></div>
+
+- analyzing this complex DAG takes time: there is a big pause at the start of the application:
+<div><img src="images/Spark_DAG_big_union_2.png"/></div>
+
+Now let's load all parquet files at once into a single Dataset:
+```scala
+import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.spark.sql.Encoders
+import SaleRecord
+
+val fs = FileSystem.get(sc.hadoopConfiguration)
+val saleSchema = Encoders.product[SaleRecord].schema
+
+val listSales = fs
+  .globStatus(new Path("/path/to/sale/data/*/2022/202203/202203*"))
+  .map(_.getPath.toString)
+spark.read
+  .schema(saleSchema)
+  .parquet(listSales:_*)
+  .as[SaleRecord]
+  .count
+```
+&rarr; Took only 2.1 min
+
+The Spark UI confirms that things are better now.
+- the DAG is very simple as you can see:
+<div><img src="images/Spark_DAG_no_union_1.png"/></div>
+
+- there is no pause at the start of the application:
+<div><img src="images/Spark_DAG_no_union_2.png"/></div>
+
+## prefer select over withColumn when adding multiple columns
+
+`withColumn` should be avoided when adding multiple columns. Quoted from [Spark source code](https://github.com/apache/spark/blob/v3.3.0/sql/core/src/main/scala/org/apache/spark/sql/Dataset.scala#L2472-L2475):
+
+```
+[`withColumn`] introduces a projection internally. Therefore, calling it multiple times,
+for instance, via loops in order to add multiple columns can generate big plans which
+can cause performance issues and even `StackOverflowException`. To avoid this,
+use `select` with the multiple columns at once.`
+```
+
+Let's illustrate this by adding columns to `df`:
+```scala
+val df = Seq((1L, "a"), (2L, "b"), (3L, "c")).toDF("uid", "desc")
+df.show
+// will output:
+// +---+----+
+// |uid|desc|
+// +---+----+
+// |  1|   a|
+// |  2|   b|
+// |  3|   c|
+// +---+----+
+```
+
+Add two columns "col1" and "col2" with `withColumn`:
+```scala
+df.withColumn("col1", lit("val1"))
+  .withColumn("col2", lit("val2"))
+  .show
+// will output:
+// +---+----+----+----+
+// |uid|desc|col1|col2|
+// +---+----+----+----+
+// |  1|   a|val1|val2|
+// |  2|   b|val1|val2|
+// |  3|   c|val1|val2|
+// +---+----+----+----+
+```
+
+Add two columns "col1" and "col2" with `select`:
+```scala
+df.select((
+      df.columns.map(col(_)) :+   // get list of columns in df as a Seq[Column]
+      lit("val1").as("col1") :+   // add Column "col1"
+      lit("val2").as("col2")      // add Column "col2"
+    ):_*                          // un-pack the Seq[Column] into arguments 
+  ).show
+// will output:
+// +---+----+----+----+
+// |uid|desc|col1|col2|
+// +---+----+----+----+
+// |  1|   a|val1|val2|
+// |  2|   b|val1|val2|
+// |  3|   c|val1|val2|
+// +---+----+----+----+
+```
+
+N.B.: always prefer the `select` implementation when adding multiple columns!
+
+## A few final words
+
+Spark versatility comes with a certain level of complexity, I hope that this article will help you writing better applications.
+
+## About the author
+
+Christophe Préaud is Lead data engineer & technical referent in the data-platform team at Kelkoo Group.
+
+You can connect with him on [LinkedIn](https://www.linkedin.com/in/christophe-pr%C3%A9aud-184023155).
