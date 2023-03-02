@@ -54,36 +54,44 @@ Step 4 is a stage boundary: all the Tasks must synchronize (i.e. all partitions
 
 In more details:
 
-[Engineering > Spark: Jobs and Stages > job_stages.png]
+![Spark jobs and stages - step 1](images/Spark_jobs_stages_01.png)
 
 Four slots have been reserved for the Spark application. The file to read is split into 6 partitions (P1 to P6).
 
 In Stage 1, Spark will create a pipeline of transformations in which the data is read into RAM (Step 1), and then perform Steps 2, 3, 4a and 4b on each partition.
-[Engineering > Spark: Jobs and Stages > job_stages_1.png]
+
+![Spark jobs and stages - step 2](images/Spark_jobs_stages_02.png)
 
 All four slots read a partition of the data into RAM (Step 1)
-[Engineering > Spark: Jobs and Stages > job_stages_2.png]
+
+![Spark jobs and stages - step 3](images/Spark_jobs_stages_03.png)
 
 Some partitions are quicker to process than others, a slot can performs next steps in Stage 1 for this partition without waiting for other partitions.
-[Engineering > Spark: Jobs and Stages > job_stages_3.png]
+
+![Spark jobs and stages - step 4](images/Spark_jobs_stages_04.png)
 
 Step 4 is a stage boundary, all slots at this step (Slot 2, 3 and 4) must write shuffle data for this partition (Step 4b).
-[Engineering > Spark: Jobs and Stages > job_stages_4.png]
+
+![Spark jobs and stages - step 5](images/Spark_jobs_stages_05.png)
 
 Then process another partition (Slot 2 and 3 now process partitions P5 and P6, Slot 4 is still writing shuffle data for P4).
-[Engineering > Spark: Jobs and Stages > job_stages_5.png]
+
+![Spark jobs and stages - step 6](images/Spark_jobs_stages_06.png)
 
 Notice that Slot 1 and Slot 4 are not working, they cannot be assigned a new Task as long as Stage 1 is not finished.
 
 When partitions P1 to P6 have finished Step 4b (i.e. they have finished writing their shuffle files), Stage 1 is finished and Stage 2 begins.
 
 In Stage 2, Spark will create a pipeline of transformations in which the shuffle files are read into RAM (Step 4c), and then perform Steps 4d, 5, 6 and 7 on each partition.
-[Engineering > Spark: Jobs and Stages > job_stages_6.png]
+
+![Spark jobs and stages - step 7](images/Spark_jobs_stages_07.png)
 
 All four slots read shuffle files into RAM (Step 4c).
 
 And so on...
-[Engineering > Spark: Jobs and Stages > job_stages_7.png]
+
+![Spark jobs and stages - step 8](images/Spark_jobs_stages_08.png)
+
 Building a house (the job) analogy
 
     The first stage would be to lay the foundation.
