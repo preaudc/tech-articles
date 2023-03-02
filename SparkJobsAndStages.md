@@ -65,7 +65,7 @@ In **Stage 1**, Spark will create a pipeline of transformations in which the dat
 
 ![Spark jobs and stages - step 2](images/Spark_jobs_stages_02.png)
 
-All four slots read a partition of the data into RAM (Step 1)
+All four slots read a partition of the data into RAM (Step 1).
 
 ![Spark jobs and stages - step 3](images/Spark_jobs_stages_03.png)
 
