@@ -1,16 +1,20 @@
 # Spark: Jobs and Stages
 
+Spark is an open source scalable engine to process your data, whether in batches or real-time streaming.
+
+In order to optimize performance and resource usage, you have to understand how Spark processes your data and more specifically how it splits its work into jobs and stages.
+
 ## Glossary
 
-- Transformation: lazy evaluated Dataset operation which returns a Dataset (see ***Typed transformations*** and ***Untyped transformations*** in the [Spark Dataset scaladoc](http://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.sql.Dataset))
+- <ins>Transformation</ins>: lazy evaluated Dataset operation which returns a Dataset (see ***Typed transformations*** and ***Untyped transformations*** in the [Spark Dataset scaladoc](http://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.sql.Dataset))
   - Narrow transformation: The data required to compute the records in a single Partition resides in at most one Partition of the parent Dataset (no shuffle)
   - Wide transformation: The data required to compute the records in a single Partition may reside in many Partitions of the parent Dataset (i.e. it triggers a shuffle operation, see below)
-- Action: Dataset operation which returns a result to the driver (i.e. is evaluated and triggers the evaluation of previous transformations on the Dataset)
-- Task: a unit of work that will be sent to one executor and done by a single thread
-- Slot: the number of Tasks that can be processed simultaneously by the Spark application. The total number of Slots is ***number of executors × number of cores*** reserved for the Spark application
-- Job: several transformation(s) followed by (exactly) one action
-- Stage: several narrow transformations followed by (exactly) one wide transformation
-- Shuffle: a shuffle operation is triggered when data needs to be moved between executors:
+- <ins>Action</ins>: Dataset operation which returns a result to the driver (i.e. is evaluated and triggers the evaluation of previous transformations on the Dataset)
+- <ins>Task</ins>: a unit of work that will be sent to one executor and done by a single thread
+- <ins>Slot</ins>: the number of Tasks that can be processed simultaneously by the Spark application. The total number of Slots is ***number of executors × number of cores*** reserved for the Spark application
+- <ins>Job</ins>: several transformation(s) followed by (exactly) one action
+- <ins>Stage</ins>: several narrow transformations followed by (exactly) one wide transformation
+- <ins>Shuffle</ins>: a shuffle operation is triggered when data needs to be moved between executors:
   - data is written from RAM to local disk on the source executor
   - the data is sent to another executor (the driver decides which executor gets which piece of data)
   - the data is copied back into RAM on the destination executor
@@ -65,7 +69,7 @@ In **Stage 1**, Spark will create a pipeline of transformations in which the dat
 
 ![Spark jobs and stages - step 2](images/Spark_jobs_stages_02.png)
 
-All four slots read a partition of the data into RAM (Step 1)
+All four slots read a partition of the data into RAM (Step 1).
 
 ![Spark jobs and stages - step 3](images/Spark_jobs_stages_03.png)
 
