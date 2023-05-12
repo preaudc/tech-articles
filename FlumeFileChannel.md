@@ -1,4 +1,4 @@
-# Fix Flume File Channel filling because of invalid country header
+# Write a Flume Interceptor to modify events header on the fly
 
 Apache Flume is an efficient and flexible tool for ingesting and processing
 large amounts of data in a distributed environment.
@@ -13,9 +13,11 @@ customizable and extensible.
 Flume is especially suitable for moving large amounts of log data and other
 streaming data from various sources to a centralized data store such as HDFS.
 
-This article describes an issue with the source data which blocks all data
-before it arrives in the sink. The solution uses a Flume Interceptor to clean
-the source data.
+This article describes an issue where several Flume agent get stuck for no
+apparent reason and stop writing data on HDFS.
+
+I will show you how to investigate and identify the issue, and how to solve it
+using Flume Interceptors.
 
 ## MyCompany Flume topology description
 
@@ -41,7 +43,7 @@ a1.channels.cMyLogType.type = file
 Finally kMyLogType is an [HDFS Sink](https://flume.apache.org/releases/content/1.11.0/FlumeUserGuide.html#hdfs-sink).
 This Flume sink uses the country header to set the directory path of the file
 in which the events are written (see `%{country}` in the
-L`a1.sinks.kMyLogType.hdfs.path` property below):
+`a1.sinks.kMyLogType.hdfs.path` property below):
 
 ```INI
 a1.sinks.kMyLogType.channel = cMyLogType
@@ -49,7 +51,91 @@ a1.sinks.kMyLogType.type = hdfs
 a1.sinks.kMyLogType.hdfs.path = hdfs://mycompany-cluster/user/mycompany/logs/flume/myLogType/%{country}/current
 ```
 
-## Issue description
+## MyCompany issue and investigation
+
+==In the rest of this article, FLUME_HOME is set to the path to the Flume home
+directory, e.g. `FLUME_HOME=/opt/flume`==
+
+As stated in the preamble to this article, the issue is that several Flume
+agents suddenly stop writing data on HDFS
+
+Luckily, Flume offers several metrics to monitor sources, channels and sinks
+and see what's going on:
+
+```shell
+# Replace <agent monitoring port> by the numerical monitoring port.
+# The monitoring port of each Flume agent is defined in the configuration
+# file at $FLUME_HOME/conf/flume-env.sh, e.g. AGENT_1_MONITORING_PORT=34545
+curl -s http://flume.mycompany.com:<agent monitoring port>/metrics | jq -Mr '.["SOURCE.rMyLogType"]'
+{
+  "AppendBatchAcceptedCount": "5634890",
+  "GenericProcessingFail": "0",
+  "EventAcceptedCount": "28172690",
+  "AppendReceivedCount": "0",
+  "StartTime": "1682500964003",
+  "AppendBatchReceivedCount": "5634890",
+  "ChannelWriteFail": "0",
+  "EventReceivedCount": "28172690",
+  "EventReadFail": "0",
+  "Type": "SOURCE",
+  "AppendAcceptedCount": "0",
+  "OpenConnectionCount": "5",
+  "StopTime": "0"
+}
+
+curl -s http://flume.mycompany.com:<agent monitoring port>/metrics | jq -Mr '.["CHANNEL.cMyLogType"]'
+{
+  "Unhealthy": "0",
+  "ChannelSize": "20",
+  "EventTakeAttemptCount": "31011495",
+  "StartTime": "1682500959364",
+  "Open": "true",
+  "CheckpointWriteErrorCount": "0",
+  "ChannelCapacity": "15000000",
+  "ChannelFillPercentage": "4.5",
+  "EventTakeErrorCount": "0",
+  "Type": "CHANNEL",
+  "EventTakeSuccessCount": "28172755",
+  "Closed": "0",
+  "CheckpointBackupWriteErrorCount": "0",
+  "EventPutAttemptCount": "28172760",
+  "EventPutSuccessCount": "28172760",
+  "EventPutErrorCount": "0",
+  "StopTime": "0"
+}
+
+curl -s http://flume.mycompany.com:<agent monitoring port>/metrics | jq -Mr '.["SINK.kMyLogType"]'
+{
+  "ConnectionCreatedCount": "32109",
+  "BatchCompleteCount": "1192",
+  "EventWriteFail": "0",
+  "BatchEmptyCount": "1310151",
+  "EventDrainAttemptCount": "28172830",
+  "StartTime": "1682500961896",
+  "BatchUnderflowCount": "1528596",
+  "ChannelReadFail": "0",
+  "ConnectionFailedCount": "0",
+  "ConnectionClosedCount": "32073",
+  "Type": "SINK",
+  "EventDrainSuccessCount": "28172830",
+  "StopTime": "0"
+}
+```
+
+The cMyLogType ChannelFillPercentage is suspiciously high, and a more thorough
+look at it shows that indeed the cMyLogType File Channel fill percentage keeps
+growing, and therefore the events are stuck in it.
+
+```shell
+curl -s http://flume.mycompany.com:<agent a1 monitoring port>/metrics | jq -Mr '.["CHANNEL.cMyLogType"] | .ChannelFillPercentage'
+4.7
+```
+
+A look at the Flume agent logs gives the final hint on what is going on:
+
+```
+Caused by: java.lang.IllegalArgumentException: Pathname /user/mycompany/logs/flume/myLogType/fr';WAITFOR DELAY '0:0:32'--/current/_MyLogType_20220707_14_flume01_a3.1657202736341.seq.tmp from hdfs://mycompany-cluster/user/mycompany/logs/flume/myLogType/fr';WAITFOR DELAY '0:0:32'--/current/_MyLogType_20220707_14_flume01_a3.1657202736341.seq.tmp is not a valid DFS filename.
+```
 
 The problem is that the country header, which should be a 2-character country
 code, is defined using an unreliable external string field, and can sometimes
@@ -76,35 +162,20 @@ friy3j4h234hjb23234
 This is inconvenient, but still does not cause more trouble than creating
 invalid directory names on HDFS.
 
-Howover, the country header sometimes contains characters which are invalid
-for an HDFS directory name. In that case, the Flume agent will raise an
-IllegalArgumentException exception when that happens:
-
-```
-Caused by: java.lang.IllegalArgumentException: Pathname /user/mycompany/logs/flume/myLogType/fr';WAITFOR DELAY '0:0:32'--/current/_MyLogType_20220707_14_flume01_a3.1657202736341.seq.tmp from hdfs://mycompany-cluster/user/mycompany/logs/flume/myLogType/fr';WAITFOR DELAY '0:0:32'--/current/_MyLogType_20220707_14_flume01_a3.1657202736341.seq.tmp is not a valid DFS filename.
-```
+However, the country header sometimes contains characters which are invalid
+for an HDFS directory name. In that case, the Flume agent will raise the above
+IllegalArgumentException exception when that happens.
 
 Even worse, the event will be stuck in the cMyLogType File Channel, and will
 block all the following events!
 
-As a consequence, the File Channel fill percentage will kept growing, you can
-check that with the command below:
-
-```shell
-# FLUME_HOME is set to the path to the Flume home directory, e.g.
-# FLUME_HOME=/opt/flume
-# 
-# Replace <agent a1 monitoring port> by the numerical monitoring port.
-# The monitoring port of each Flume agent is defined in the configuration
-# file at $FLUME_HOME/conf/flume-env.sh, e.g. AGENT_1_MONITORING_PORT=34545
---> curl -s http://flume.mycompany.com:<agent a1 monitoring port>/metrics | jq -Mr '.["CHANNEL.cMyLogType"] | .ChannelFillPercentage'
-4.56146
-```
+As a consequence, the File Channel fill percentage will kept growing, as we
+have experienced earlier.
 
 ## Solution: step-by-step guide
 
 The chosen solution is to use [Flume Interceptors](https://flume.apache.org/releases/content/1.11.0/FlumeUserGuide.html#flume-interceptors)
-to modify the country header in-flight.
+to modify the country header on the fly.
 
 ### Implement the Interceptor class
 
