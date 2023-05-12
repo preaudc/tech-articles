@@ -57,7 +57,7 @@ a1.sinks.kMyLogType.hdfs.path = hdfs://mycompany-cluster/user/mycompany/logs/flu
 home directory, e.g. `FLUME_HOME=/opt/flume`***
 
 As stated in the preamble to this article, the issue is that several Flume
-agents suddenly stop writing data on HDFS
+agents suddenly stop writing data on HDFS.
 
 Luckily, Flume offers several metrics to monitor sources, channels and sinks.
 
@@ -132,7 +132,7 @@ curl -s http://flume.mycompany.com:<agent a1 monitoring port>/metrics | jq -Mr '
 4.7
 ```
 
-A look at the Flume agent logs gives the final hint on what is going on:
+A look at the Flume agent logs discloses the final hint on what is going on:
 
 ```
 Caused by: java.lang.IllegalArgumentException: Pathname /user/mycompany/logs/flume/myLogType/fr';WAITFOR DELAY '0:0:32'--/current/_MyLogType_20220707_14_flume01_a3.1657202736341.seq.tmp from hdfs://mycompany-cluster/user/mycompany/logs/flume/myLogType/fr';WAITFOR DELAY '0:0:32'--/current/_MyLogType_20220707_14_flume01_a3.1657202736341.seq.tmp is not a valid DFS filename.
@@ -164,8 +164,9 @@ This is inconvenient, but still does not cause more trouble than creating
 invalid directory names on HDFS.
 
 However, the country header sometimes contains characters which are invalid
-for an HDFS directory name. In that case, the Flume agent will raise the above
-IllegalArgumentException exception when that happens.
+for an HDFS directory name, e.g. `fr';WAITFOR DELAY '0:0:32'--` in the above
+exception. In that case, the Flume agent will raise an
+IllegalArgumentException.
 
 Even worse, the event will be stuck in the cMyLogType File Channel, and will
 block all the following events!
