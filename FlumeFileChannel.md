@@ -53,8 +53,9 @@ a1.sinks.kMyLogType.hdfs.path = hdfs://mycompany-cluster/user/mycompany/logs/flu
 
 ## MyCompany issue and investigation
 
-==In the rest of this article, FLUME_HOME is set to the path to the Flume home
-directory, e.g. `FLUME_HOME=/opt/flume`==
+==In the rest of this article, FLUME_HOME is set to the path to the Flume home directory.==
+
+, e.g. `FLUME_HOME=/opt/flume`==
 
 As stated in the preamble to this article, the issue is that several Flume
 agents suddenly stop writing data on HDFS
