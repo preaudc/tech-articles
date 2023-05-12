@@ -321,7 +321,7 @@ makes use of this interceptor.
 ![Fix Flume File Channel - interceptor topology](images/Flume_channel_fix_02.png)
 
 
-I only need to define the interceptor in the Avro Source:
+I only need to define the interceptor i1 in the Avro Source:
 
 ```INI
 a1.sources.rMyLogType.type = avro
@@ -389,20 +389,20 @@ That way, I can:
 ### Flush the File Channel
 
 Set the flushFileChannel topology described above in
-`$FLUME_HOME/conf/flume-conf.properties` and restart the impacted Flume
+`$FLUME_HOME/conf/flume-conf.properties`, restart the impacted Flume
 agents, and wait for the cMyLogType File Channel fill percentage to decrease
 down to 0%.
 
-For exampe for agent a1:
+For example for agent a1 (wait until ChannelFillPercentage is close to 0):
 
 ```shell
-watch -n 1 'curl -s http://flume.mycompany.com:<agent a1 monitoring port>/metrics | jq -Mr ".[\"CHANNEL.channel_Impression_storeInHdfs\"] | .ChannelFillPercentage"'
+watch -n 10 'curl -s http://flume.mycompany.com:<agent a1 monitoring port>/metrics | jq -Mr ".[\"CHANNEL.channel_Impression_storeInHdfs\"] | .ChannelFillPercentage"'
 ```
 
 ### Deploy the interceptor topology
 
 Now that the cMyLogType File Channel is completely empty, I can stop Flume
-and deploy the interceptor topology.
+and deploy the simpler interceptor topology above.
 
 This will allow me to:
 - fix the country header (drop all characters except the first two consecutive
@@ -414,3 +414,19 @@ This will allow me to:
 Set the interceptor topology described above in
 `$FLUME_HOME/conf/flume-conf.properties` and restart the impacted Flume
 agents to load the interceptorTopology.
+
+## A few final words
+
+Flume Interceptors are a powerful tool to modify/drop events on the fly.
+
+The documentation for writing a Flume Interceptor is quite sparse, but once
+you got the knack of it it is quite simple.
+
+After that, it is mainly a matter of plumbing (I mean topology!) to get what
+you want!
+
+## About the author
+
+Christophe Préaud is data architect at Kelkoo Group.
+
+You can connect with him on [LinkedIn](https://www.linkedin.com/in/christophe-pr%C3%A9aud-184023155).
