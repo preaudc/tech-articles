@@ -59,8 +59,9 @@ home directory, e.g. `FLUME_HOME=/opt/flume`***
 As stated in the preamble to this article, the issue is that several Flume
 agents suddenly stop writing data on HDFS
 
-Luckily, Flume offers several metrics to monitor sources, channels and sinks
-and see what's going on:
+Luckily, Flume offers several metrics to monitor sources, channels and sinks.
+
+Let's see what's going on:
 
 ```shell
 # Replace <agent monitoring port> by the numerical monitoring port.
@@ -307,7 +308,7 @@ public class FixCountryHeaderInterceptor implements Interceptor {
 }
 ```
 
-You now need to compile this class into a jar (let's call it
+I now need to compile this class into a jar (let's call it
 `flume-interceptors-1.0.0.jar`) and distribute it with flume at
 `$FLUME_HOME/lib/flume-interceptors-1.0.0.jar`.
 
@@ -319,7 +320,7 @@ makes use of this interceptor.
 ![Fix Flume File Channel - interceptor topology](images/Flume_channel_fix_02.png)
 
 
-You only need to define the interceptor in the Avro Source:
+I only need to define the interceptor in the Avro Source:
 
 ```INI
 a1.sources.rMyLogType.type = avro
@@ -339,7 +340,7 @@ a1.sinks.kMyLogType.hdfs.path = hdfs://mycompany-cluster/user/mycompany/logs/flu
 However, a Flume interceptor can only be applied on a Flume source, whereas
 the events, because of the original topology, are stuck in the cMyLogType File Channel!
 
-As a consequence, you need first to define a temporary topology to flush the
+As a consequence, I need first to define a temporary topology to flush the
 file channel (dubbed flushFileChannel topology) before using the interceptor
 topology above.
 
@@ -375,7 +376,7 @@ a1.sinks.kMyLogType.hdfs.path = hdfs://mycompany-cluster/user/mycompany/logs/flu
 
 ```
 
-That way, you can:
+That way, I can:
 - flush the events from the cMyLogType channel into the kMyLogTypeAvro avro
   sink.
 - fix the country header (drop all characters except the first two consecutive
@@ -399,10 +400,10 @@ watch -n 1 'curl -s http://flume.mycompany.com:<agent a1 monitoring port>/metric
 
 ### Deploy the interceptor topology
 
-Now that the cMyLogType File Channel is completely empty, you can stop Flume
+Now that the cMyLogType File Channel is completely empty, I can stop Flume
 and deploy the interceptor topology.
 
-This will allow you to:
+This will allow me to:
 - fix the country header (drop all characters except the first two consecutive
   alphabetic ones) in the rMyLogType Avro Source using a custom Flume
   interceptor.
