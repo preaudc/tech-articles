@@ -31,16 +31,19 @@ a1.sources.rMyLogType.channels = cMyLogType
 ```
 
 cMyLogType is a [File Channel](https://flume.apache.org/releases/content/1.11.0/FlumeUserGuide.html#file-channel).
-This Flume channel send its events from the rMyLogType source to the kMyLogType sink:
+This Flume channel send its events from the rMyLogType source to the
+kMyLogType sink:
 
-```
+```INI
 a1.channels.cMyLogType.type = file
 ```
 
 Finally kMyLogType is an [HDFS Sink](https://flume.apache.org/releases/content/1.11.0/FlumeUserGuide.html#hdfs-sink).
-This Flume sink uses the country header to set the directory path of the file in which the events are written (see `%{country}` in the `a1.sinks.kMyLogType.hdfs.path` property below):
+This Flume sink uses the country header to set the directory path of the file
+in which the events are written (see `%{country}` in the
+L`a1.sinks.kMyLogType.hdfs.path` property below):
 
-```
+```INI
 a1.sinks.kMyLogType.channel = cMyLogType
 a1.sinks.kMyLogType.type = hdfs
 a1.sinks.kMyLogType.hdfs.path = hdfs://mycompany-cluster/user/mycompany/logs/flume/myLogType/%{country}/current
@@ -48,7 +51,9 @@ a1.sinks.kMyLogType.hdfs.path = hdfs://mycompany-cluster/user/mycompany/logs/flu
 
 ## Issue description
 
-The problem is that the country header, which should be a 2-character country code, is defined using an unreliable external string field, and can sometimes be set to an invalid value, e.g.:
+The problem is that the country header, which should be a 2-character country
+code, is defined using an unreliable external string field, and can sometimes
+be set to an invalid value, e.g.:
 
 ```
 fr'+(select*from(select(sleep(20)))a)+'
@@ -79,9 +84,11 @@ IllegalArgumentException exception when that happens:
 Caused by: java.lang.IllegalArgumentException: Pathname /user/mycompany/logs/flume/myLogType/fr';WAITFOR DELAY '0:0:32'--/current/_MyLogType_20220707_14_flume01_a3.1657202736341.seq.tmp from hdfs://mycompany-cluster/user/mycompany/logs/flume/myLogType/fr';WAITFOR DELAY '0:0:32'--/current/_MyLogType_20220707_14_flume01_a3.1657202736341.seq.tmp is not a valid DFS filename.
 ```
 
-Even worse, the event will be stuck in the cMyLogType File Channel, and will block all the following events!
+Even worse, the event will be stuck in the cMyLogType File Channel, and will
+block all the following events!
 
-As a consequence, the File Channel fill percentage will kept growing, you can check that with the command below:
+As a consequence, the File Channel fill percentage will kept growing, you can
+check that with the command below:
 
 ```shell
 # FLUME_HOME is set to the path to the Flume home directory, e.g.
@@ -123,7 +130,7 @@ alphabetic characters in the original country header and put it in lower case.
  * limitations under the License.
  */
 
-package com.mycompany.common.flume.interceptor;
+package com.mycompany.flume.interceptor;
 
 import java.util.List;
 import java.util.Map;
@@ -147,7 +154,7 @@ import org.slf4j.LoggerFactory;
  *   agent.sources.r1.channels = c1<p>
  *   agent.sources.r1.type = SEQ<p>
  *   agent.sources.r1.interceptors = i1<p>
- *   agent.sources.r1.interceptors.i1.type = com.mycompany.common.flume.interceptor.FixCountryHeaderInterceptor$Builder<p>
+ *   agent.sources.r1.interceptors.i1.type = com.mycompany.flume.interceptor.FixCountryHeaderInterceptor$Builder<p>
  * </code>
  *
  */
@@ -229,7 +236,9 @@ public class FixCountryHeaderInterceptor implements Interceptor {
 }
 ```
 
-You now need to compile this class into a jar (let's call it flume-interceptors-1.0.0.jar) and distribute it with flume at `$FLUME_HOME/lib/flume-interceptors-1.0.0.jar`.
+You now need to compile this class into a jar (let's call it
+`flume-interceptors-1.0.0.jar`) and distribute it with flume at
+`$FLUME_HOME/lib/flume-interceptors-1.0.0.jar`.
 
 ### Define the interceptor topology
 
@@ -241,15 +250,13 @@ makes use of this interceptor.
 
 You only need to define the interceptor in the Avro Source:
 
-```
+```INI
 a1.sources.rMyLogType.type = avro
 a1.sources.rMyLogType.bind = flume.mycompany.com
 a1.sources.rMyLogType.port = 44444
 a1.sources.rMyLogType.channels = cMyLogType
-# <interceptor definition>
 a1.sources.rMyLogType.interceptors = i1
-a1.sources.rMyLogType.interceptors.i1.type = com.mycompany.common.flume.interceptor.FixCountryHeaderInterceptor$Builder
-# </interceptor definition>
+a1.sources.rMyLogType.interceptors.i1.type = com.mycompany.flume.interceptor.FixCountryHeaderInterceptor$Builder
 
 a1.channels.cMyLogType.type = file
 
@@ -261,15 +268,15 @@ a1.sinks.kMyLogType.hdfs.path = hdfs://mycompany-cluster/user/mycompany/logs/flu
 However, a Flume interceptor can only be applied on a Flume source, whereas
 the events, because of the original topology, are stuck in the cMyLogType File Channel!
 
-As a consequence, you need to define a temporary topology to flush the file
-channel (dubbed flushFileChannel topology) before using the interceptor
+As a consequence, you need first to define a temporary topology to flush the
+file channel (dubbed flushFileChannel topology) before using the interceptor
 topology above.
 
 ### Define the flushFileChannel topology
 
 ![Fix Flume File Channel - interceptor topology](images/Flume_channel_fix_03.png)
 
-```
+```INI
 a1.sources.rMyLogType.type = avro
 a1.sources.rMyLogType.bind = flume.mycompany.com
 a1.sources.rMyLogType.port = 44444
@@ -287,7 +294,7 @@ a1.sources.rMyLogTypeAvro.bind = localhost
 a1.sources.rMyLogTypeAvro.port = 44445
 a1.sources.rMyLogTypeAvro.channels = cMyLogTypeAvro
 a1.sources.rMyLogTypeAvro.interceptors = i1
-a1.sources.rMyLogTypeAvro.interceptors.i1.type = com.mycompany.common.flume.interceptor.FixCountryHeaderInterceptor$Builder
+a1.sources.rMyLogTypeAvro.interceptors.i1.type = com.mycompany.flume.interceptor.FixCountryHeaderInterceptor$Builder
 
 a1.channels.cMyLogTypeAvro.type = file
 
@@ -298,13 +305,22 @@ a1.sinks.kMyLogType.hdfs.path = hdfs://mycompany-cluster/user/mycompany/logs/flu
 ```
 
 That way, you can:
-- flush the events from the cMyLogType channel into the kMyLogTypeAvro avro sink.
-- fix the country header (drop all characters except the first two consecutive alphabetic ones) in the rMyLogTypeAvro Avro Source using the above Flume interceptor.
-- write the events with a now fixed country header in the kMyLogType HDFS Sink (by routing them through cMyLogTypeAvro File Channel).
+- flush the events from the cMyLogType channel into the kMyLogTypeAvro avro
+  sink.
+- fix the country header (drop all characters except the first two consecutive
+  alphabetic ones) in the rMyLogTypeAvro Avro Source using the above Flume
+  interceptor.
+- write the events with a now fixed country header in the kMyLogType HDFS
+  Sink (by routing them through cMyLogTypeAvro File Channel).
 
 ### Flush the File Channel
 
-Restart the impacted Flume agents, and wait for the cMyLogType File Channel fill percentage to decrease down to 0%, e.g. for agent a1:
+Set the flushFileChannel topology described above in
+`$FLUME_HOME/conf/flume-conf.properties` and restart the impacted Flume
+agents, and wait for the cMyLogType File Channel fill percentage to decrease
+down to 0%.
+
+For exampe for agent a1:
 
 ```shell
 watch -n 1 'curl -s http://flume.mycompany.com:<agent a1 monitoring port>/metrics | jq -Mr ".[\"CHANNEL.channel_Impression_storeInHdfs\"] | .ChannelFillPercentage"'
@@ -316,7 +332,12 @@ Now that the cMyLogType File Channel is completely empty, you can stop Flume
 and deploy the interceptor topology.
 
 This will allow you to:
-- fix the country header (drop all characters except the first two consecutive alphabetic ones) in the rMyLogType Avro Source using a custom Flume interceptor.
-- write the events with fixed country header in kMyLogType HDFS Sink (by routing them through cMyLogType File Channel).
+- fix the country header (drop all characters except the first two consecutive
+  alphabetic ones) in the rMyLogType Avro Source using a custom Flume
+  interceptor.
+- write the events with fixed country header in kMyLogType HDFS
+  Sink (by routing them through cMyLogType File Channel).
 
-Set the interceptor topology described above in `$FLUME_HOME/conf/agent_a1/flume.conf` and restart the impacted Flume agents to load the interceptorTopology.
+Set the interceptor topology described above in
+`$FLUME_HOME/conf/flume-conf.properties` and restart the impacted Flume
+agents to load the interceptorTopology.
