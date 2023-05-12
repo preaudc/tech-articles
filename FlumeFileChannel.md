@@ -19,7 +19,7 @@ apparent reason and stop writing data on HDFS.
 I will show you how to investigate and identify the issue, and how to solve it
 using Flume Interceptors.
 
-## MyCompany Flume topology description
+## Flume topology description
 
 ![Fix Flume File Channel - initial topology](images/Flume_channel_fix_01.png)
 
@@ -51,7 +51,7 @@ a1.sinks.kMyLogType.type = hdfs
 a1.sinks.kMyLogType.hdfs.path = hdfs://mycompany-cluster/user/mycompany/logs/flume/myLogType/%{country}/current
 ```
 
-## MyCompany issue and investigation
+## Issue and investigation
 
 ***In the rest of this article, FLUME_HOME is set to the path to the Flume
 home directory, e.g. `FLUME_HOME=/opt/flume`***
