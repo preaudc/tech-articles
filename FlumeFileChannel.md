@@ -23,7 +23,7 @@ the source data.
 
 rMyLogType is defined as an [Avro Source](https://flume.apache.org/releases/content/1.11.0/FlumeUserGuide.html#avro-source):
 
-```
+```INI
 a1.sources.rMyLogType.type = avro
 a1.sources.rMyLogType.bind = flume.mycompany.com
 a1.sources.rMyLogType.port = 44444
@@ -81,7 +81,7 @@ Caused by: java.lang.IllegalArgumentException: Pathname /user/mycompany/logs/flu
 
 Even worse, the event will be stuck in the cMyLogType File Channel, and will block all the following events!
 
-As a consequence, the channel fill percentage will kept growing, you can check that with the command below:
+As a consequence, the File Channel fill percentage will kept growing, you can check that with the command below:
 
 ```shell
 # FLUME_HOME is set to the path to the Flume home directory, e.g.
@@ -304,7 +304,7 @@ That way, you can:
 
 ### Flush the File Channel
 
-Restart the impacted Flume agents, and wait for the channel fill percentage of cMyLogType File Channels to decrease to 0%, e.g. for agent a1:
+Restart the impacted Flume agents, and wait for the cMyLogType File Channel fill percentage to decrease down to 0%, e.g. for agent a1:
 
 ```shell
 watch -n 1 'curl -s http://flume.mycompany.com:<agent a1 monitoring port>/metrics | jq -Mr ".[\"CHANNEL.channel_Impression_storeInHdfs\"] | .ChannelFillPercentage"'
