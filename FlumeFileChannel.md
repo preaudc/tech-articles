@@ -338,7 +338,9 @@ a1.sinks.kMyLogType.type = hdfs
 a1.sinks.kMyLogType.hdfs.path = hdfs://mycompany-cluster/user/mycompany/logs/flume/myLogType/%{country}/current
 ```
 
-However, a Flume interceptor can only be applied on a Flume source, whereas
+However, if this topology is deployed now, new events will have their header fixed
+but the ones already stuck in the rMyLogType file channel won't be impacted.
+This is because a Flume interceptor can only be applied on a Flume source, whereas
 the events, because of the original topology, are stuck in the cMyLogType File Channel!
 
 As a consequence, I need first to define a temporary topology to flush the
@@ -412,7 +414,7 @@ This will allow me to:
   Sink (by routing them through cMyLogType File Channel).
 
 Set the interceptor topology described above in
-`$FLUME_HOME/conf/flume-conf.properties` and restart the impacted Flume
+`$FLUME_HOME/conf/flume-conf.properties` and restart all Flume
 agents to load the interceptorTopology.
 
 ## A few final words
