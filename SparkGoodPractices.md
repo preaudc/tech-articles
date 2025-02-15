@@ -329,6 +329,6 @@ Spark versatility comes with a certain level of complexity, I hope that this art
 
 ## About the author
 
-Christophe Préaud is Lead data engineer & technical referent in the data-platform team at Kelkoo Group.
+Christophe Préaud is data architect at [Verkor](https://verkor.com).
 
 You can connect with him on [LinkedIn](https://www.linkedin.com/in/christophe-pr%C3%A9aud-184023155).
