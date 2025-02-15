@@ -1,6 +1,6 @@
 # Null safe equi-join
 
-The function [def join(right: Dataset[_], usingColumns: Seq[String], joinType: String): DataFrame](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/Dataset.html#join(right:org.apache.spark.sql.Dataset[_],usingColumns:Seq[String],joinType:String):org.apache.spark.sql.DataFrame) is an equi-join, meaning the join of two dataframes is made on a sequence of common columns of these two dataframes.
+The function [join](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/Dataset.html#join(right:org.apache.spark.sql.Dataset[_],usingColumns:Seq[String],joinType:String):org.apache.spark.sql.DataFrame) is an equi-join, meaning the join of two dataframes is made on a sequence of common columns of these two dataframes.
 In other words, doing an equi-join is only possible if the join columns of the two dataframes **have the exact same name**.
 
 Let's illustrate this with an example:
