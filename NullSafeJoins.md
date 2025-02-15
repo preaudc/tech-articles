@@ -122,8 +122,6 @@ Here is an alternative version of the null safe equi-join, which is based on the
 ```scala
 // Null safe equi-join - alternative solution
 // Join between df1 and df2 using a join expression with an equality test between array of columns.
-// The join columns will only appear twice in the output.
-// The equality test is null safe, i.e. (null, 777) == (null, 777).
 df1.join(df2, array(df1("col_a"), df1("col_b")) === array(df2("col_a"), df2("col_b")), "inner").show
 +---+-----+-----+---+-----+-----+
 |id1|col_a|col_b|id2|col_a|col_b|
@@ -133,7 +131,7 @@ df1.join(df2, array(df1("col_a"), df1("col_b")) === array(df2("col_a"), df2("col
 | 5L|  eee|  555|55L|  eee|  555|
 | 7L| NULL|  777|77L| NULL|  777|
 +---+-----+-----+---+-----+-----+
-```scala
+```
 We can see that:
 - The equality test is null safe, i.e. `(null, 777) == (null, 777)`.
 - But the join columns appear twice in the output.
