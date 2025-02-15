@@ -145,10 +145,10 @@ This can also be implemented in a more generic way which also deduplicates join 
 import org.apache.spark.sql.DataFrame
 
 def joinNullSafe(leftDF: DataFrame, rightDF: DataFrame, usingColumns: Seq[String], joinType: String): DataFrame = {
-  val joinExprs = array(usingColumns.map(c => leftDF(c)):_*) === array(usingColumns.map(c => rightDF(c)):_*)
+  val joinExprs = array(usingColumns.map(leftDF(_)):_*) === array(usingColumns.map(rightDF(_)):_*)
   leftDF.join(rightDF, joinExprs, joinType)
     .select((
-      usingColumns.map(c => leftDF(c))
+      usingColumns.map(leftDF(_))
         ++ (leftDF.columns ++ rightDF.columns).filterNot(usingColumns.contains(_)).map(col)
     ):_*)
 }
