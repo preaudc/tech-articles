@@ -163,3 +163,13 @@ joinNullSafe(df1, df2, Seq("col_a", "col_b"), "inner").show
 | NULL|  777| 7L|77L|
 +-----+-----+---+---+
 ```
+
+## A few final words
+
+There are many different ways to join dataframes in Spark. You need to focus on using a join implementation that suits your needs, while keeping the code as readable as possible.
+
+## About the author
+
+Christophe Préaud is data architect at [Verkor](https://verkor.com).
+
+You can connect with him on [LinkedIn](https://www.linkedin.com/in/christophe-pr%C3%A9aud-184023155).
