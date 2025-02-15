@@ -103,7 +103,7 @@ def joinNullSafe(leftDF: DataFrame, rightDF: DataFrame, usingColumns: Seq[String
   val joinExprs = forall(array(usingColumns.map(c => leftDF(c) <=> rightDF(c)):_*), identity)
   leftDF.join(rightDF, joinExprs, joinType)
     .select((
-      usingColumns.map(c => leftDF(c))
+      usingColumns.map(leftDF(_))
         ++ (leftDF.columns ++ rightDF.columns).filterNot(usingColumns.contains(_)).map(col)
     ):_*)
 }
