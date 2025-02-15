@@ -97,7 +97,8 @@ Let's now try to implement it so that:
 - It can be generalized to any sequence of columns.
 - The join columns appear only once in the output.
 ```scala
-import org.apache.spark.sql.{Column, DataFrame}
+import org.apache.spark.sql.DataFrame
+
 def joinNullSafe(leftDF: DataFrame, rightDF: DataFrame, usingColumns: Seq[String], joinType: String): DataFrame = {
   val joinExprs = forall(array(usingColumns.map(c => leftDF(c) <=> rightDF(c)):_*), identity)
   leftDF.join(rightDF, joinExprs, joinType)
@@ -138,12 +139,14 @@ We can see that:
 
 This can also be implemented in a more generic way which also deduplicates join columns:
 ```scala
-import org.apache.spark.sql.{Column, DataFrame}
+import org.apache.spark.sql.DataFrame
+
 def joinNullSafe(leftDF: DataFrame, rightDF: DataFrame, usingColumns: Seq[String], joinType: String): DataFrame = {
   val joinExprs = array(usingColumns.map(c => leftDF(c)):_*) === array(usingColumns.map(c => rightDF(c)):_*)
   leftDF.join(rightDF, joinExprs, joinType)
     .select((usingColumns.map(c => leftDF(c)) ++ (leftDF.columns ++ rightDF.columns).filterNot(usingColumns.contains(_)).map(col)):_*)
 }
+
 joinNullSafe(df1, df2, Seq("col_a", "col_b"), "inner").show
 +-----+-----+---+---+
 |col_a|col_b|id1|id2|
