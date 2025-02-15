@@ -113,3 +113,13 @@ Then each stage can be broken down into several operations, e.g. for the first s
 Each operation in each stage is handled by tasks which can be done independently (i.e. you can start pouring the concrete in one trench even if other trenches are still being dug).
 
 However, you have to wait for all first stage tasks to be finished before starting to erect the walls.
+
+## A few final words
+
+Understanding how Spark works under the hood will be a great help in diagnosing problems and/or performance issues.
+
+## About the author
+
+Christophe Préaud is data architect at [Verkor](https://verkor.com).
+
+You can connect with him on [LinkedIn](https://www.linkedin.com/in/christophe-pr%C3%A9aud-184023155).
