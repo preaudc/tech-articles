@@ -429,6 +429,6 @@ you want!
 
 ## About the author
 
-Christophe Préaud is data architect at Kelkoo Group.
+Christophe Préaud is data architect at Verkor.
 
 You can connect with him on [LinkedIn](https://www.linkedin.com/in/christophe-pr%C3%A9aud-184023155).
