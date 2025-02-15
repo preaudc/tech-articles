@@ -71,7 +71,7 @@ df1.join(df2, df1("col_a") === df2("col_a") && df1("col_b") === df2("col_b"), "i
 - The syntax is clearer and more straightforward.
 - The join columns will only appear once in the output.
 
-However, the equality test is not [null safe](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/Column.html#%3C=%3E(other:Any):org.apache.spark.sql.Column), meaning in our example that the row of dF1 with id1 == 7L will not be joined to the row of df2 with id2 == 77L (because for a standard equality test, (null, 777) != (null, 777)).
+However, the equality test is not [null safe](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/Column.html#%3C=%3E(other:Any):org.apache.spark.sql.Column), meaning in our example that the row of dF1 with id1 == 7L will not be joined to the row of df2 with id2 == 77L (because for the standard equality test [===](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/Column.html#===(other:Any):org.apache.spark.sql.Column), (null, 777) != (null, 777)).
 
 As a consequence, we will now try to implement a null safe equi-join.
 
