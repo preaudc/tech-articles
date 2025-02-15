@@ -70,15 +70,15 @@ df1.join(df2, df1("col_a") === df2("col_a") && df1("col_b") === df2("col_b"), "i
 ```
 - The syntax is clearer and more straightforward.
 - The join columns will only appear once in the output.
-// The equality test is not null safe, i.e. (null, 777) != (null, 777).
 
+However, the equality test is not [null safe](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/Column.html#%3C=%3E(other:Any):org.apache.spark.sql.Column), meaning in our example that the row of dF1 with id1 == 7L will not be joined to the row of df2 with id2 == 77L (because for a standard equality test, (null, 777) != (null, 777)).
 
+As a consequence, we will now try to implement a null safe equi-join.
 
+Let's first try with a join expression using null safe equality tests:
 ```scala
 // Null safe equi-join
 // Join between df1 and df2 using a join expression with null safe equality tests between columns.
-// The join columns will only appear twice in the output.
-// The equality test is null safe, i.e. (null, 777) == (null, 777).
 df1.join(df2, df1("col_a") <=> df2("col_a") && df1("col_b") <=> df2("col_b"), "inner").show
 +---+-----+-----+---+-----+-----+
 |id1|col_a|col_b|id2|col_a|col_b|
@@ -88,8 +88,14 @@ df1.join(df2, df1("col_a") <=> df2("col_a") && df1("col_b") <=> df2("col_b"), "i
 | 5L|  eee|  555|55L|  eee|  555|
 | 7L| NULL|  777|77L| NULL|  777|
 +---+-----+-----+---+-----+-----+
+```
 
-// This can be made generic for any sequence of columns
+We can see that:
+- The join columns will only appear twice in the output.
+- The equality test is null safe, i.e. (null, 777) == (null, 777).
+
+Let's now try to implement it so that it can be generalized to any sequence of columns:
+```scala
 import org.apache.spark.sql.{Column, DataFrame}
 def joinNullSafe(leftDF: DataFrame, rightDF: DataFrame, usingColumns: Seq[String], joinType: String): DataFrame = {
   val joinExprs = forall(array(usingColumns.map(c => leftDF(c) <=> rightDF(c)):_*), identity)
