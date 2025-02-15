@@ -118,7 +118,7 @@ joinNullSafe(df1, df2, Seq("col_a", "col_b"), "inner").show
 
 ## Appendix
 
-Here is an alternative version of the null safe equi-join, which is based on the property that the equality test between array of columns is null safe by default!
+Here is an alternative version of the null safe equi-join, which is based on the property that the equality test between two array of columns is null safe by default!
 ```scala
 // Null safe equi-join - alternative solution
 // Join between df1 and df2 using a join expression with an equality test between array of columns.
