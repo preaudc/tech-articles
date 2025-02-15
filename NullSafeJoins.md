@@ -90,7 +90,7 @@ df1.join(df2, df1("col_a") <=> df2("col_a") && df1("col_b") <=> df2("col_b"), "i
 +---+-----+-----+---+-----+-----+
 ```
 We can see that:
-- The equality test is null safe, i.e. (null, 777) == (null, 777).
+- The equality test is null safe, i.e. `(null, 777) == (null, 777)`.
 - But the join columns appear twice in the output.
 
 Let's now try to implement it so that:
@@ -135,7 +135,7 @@ df1.join(df2, array(df1("col_a"), df1("col_b")) === array(df2("col_a"), df2("col
 +---+-----+-----+---+-----+-----+
 ```scala
 We can see that:
-- The equality test is null safe, i.e. (null, 777) == (null, 777).
+- The equality test is null safe, i.e. `(null, 777) == (null, 777)`.
 - But the join columns appear twice in the output.
 
 This can also be implemented in a more generic way which also deduplicates join columns:
