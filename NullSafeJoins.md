@@ -1,5 +1,10 @@
 # Null safe equi-join
 
+The function [def join(right: Dataset[_], usingColumns: Seq[String], joinType: String): DataFrame](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/Dataset.html#join(right:org.apache.spark.sql.Dataset[_],usingColumns:Seq[String],joinType:String):org.apache.spark.sql.DataFrame) is an equi-join, meaning the join of two dataframes is made on a sequence of common columns of these two dataframes.
+In other words, doing an equi-join is only possible if the join columns of the two dataframes **have the exact same name**.
+
+Let's illustrate this with an example:
+
 ```scala
 val df1 = Seq(
   ("1L", "aaa", 111),
@@ -24,9 +29,7 @@ df1.show
 | 7L| NULL|  777|
 | 8L|  hhh|  888|
 +---+-----+-----+
-```
 
-```scala
 val df2 = Seq(
   ("11L", "aaa", 111),
   ("33L", "ccc", 333),
@@ -42,12 +45,8 @@ df2.show
 |55L|  eee|  555|
 |77L| NULL|  777|
 +---+-----+-----+
-```
 
-```scala
 // Equi-join between df1 and df2 using a sequence of columns.
-// The join columns will only appear once in the output.
-// The equality test is not null safe, i.e. (null, 777) != (null, 777).
 df1.join(df2, Seq("col_a", "col_b"), "inner").show
 +-----+-----+---+---+
 |col_a|col_b|id1|id2|
@@ -57,6 +56,23 @@ df1.join(df2, Seq("col_a", "col_b"), "inner").show
 |  eee|  555| 5L|55L|
 +-----+-----+---+---+
 ```
+
+This method has several advantages over the same join expressed using a join expression:
+```scala
+df1.join(df2, df1("col_a") === df2("col_a") && df1("col_b") === df2("col_b"), "inner").show
++---+-----+-----+---+-----+-----+
+|id1|col_a|col_b|id2|col_a|col_b|
++---+-----+-----+---+-----+-----+
+| 1L|  aaa|  111|11L|  aaa|  111|
+| 3L|  ccc|  333|33L|  ccc|  333|
+| 5L|  eee|  555|55L|  eee|  555|
++---+-----+-----+---+-----+-----+
+```
+- The syntax is clearer and more straightforward.
+- The join columns will only appear once in the output.
+// The equality test is not null safe, i.e. (null, 777) != (null, 777).
+
+
 
 ```scala
 // Null safe equi-join
