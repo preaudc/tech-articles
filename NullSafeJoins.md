@@ -102,7 +102,10 @@ import org.apache.spark.sql.DataFrame
 def joinNullSafe(leftDF: DataFrame, rightDF: DataFrame, usingColumns: Seq[String], joinType: String): DataFrame = {
   val joinExprs = forall(array(usingColumns.map(c => leftDF(c) <=> rightDF(c)):_*), identity)
   leftDF.join(rightDF, joinExprs, joinType)
-    .select((usingColumns.map(c => leftDF(c)) ++ (leftDF.columns ++ rightDF.columns).filterNot(usingColumns.contains(_)).map(col)):_*)
+    .select((
+      usingColumns.map(c => leftDF(c))
+        ++ (leftDF.columns ++ rightDF.columns).filterNot(usingColumns.contains(_)).map(col)
+    ):_*)
 }
 
 joinNullSafe(df1, df2, Seq("col_a", "col_b"), "inner").show
@@ -144,7 +147,10 @@ import org.apache.spark.sql.DataFrame
 def joinNullSafe(leftDF: DataFrame, rightDF: DataFrame, usingColumns: Seq[String], joinType: String): DataFrame = {
   val joinExprs = array(usingColumns.map(c => leftDF(c)):_*) === array(usingColumns.map(c => rightDF(c)):_*)
   leftDF.join(rightDF, joinExprs, joinType)
-    .select((usingColumns.map(c => leftDF(c)) ++ (leftDF.columns ++ rightDF.columns).filterNot(usingColumns.contains(_)).map(col)):_*)
+    .select((
+      usingColumns.map(c => leftDF(c))
+        ++ (leftDF.columns ++ rightDF.columns).filterNot(usingColumns.contains(_)).map(col)
+    ):_*)
 }
 
 joinNullSafe(df1, df2, Seq("col_a", "col_b"), "inner").show
