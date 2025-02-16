@@ -1,6 +1,6 @@
 # Null safe equi-join
 
-The function [join](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/Dataset.html#join(right:org.apache.spark.sql.Dataset[_],usingColumns:Seq[String],joinType:String):org.apache.spark.sql.DataFrame) is an equi-join, meaning the join of two dataframes is made on a sequence of common columns of these two dataframes.
+The function [join](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/Dataset.html#join(right:org.apache.spark.sql.Dataset[_],usingColumns:Seq[String],joinType:String):org.apache.spark.sql.DataFrame) `def join(right: Dataset[_], usingColumns: Seq[String], joinType: String): DataFrame` is an equi-join, meaning the join of two dataframes is made on a sequence of common columns of these two dataframes.
 In other words, doing an equi-join is only possible if the join columns of the two dataframes **have the exact same name**.
 
 Let's illustrate this with an example:
@@ -68,7 +68,7 @@ df1.join(df2, df1("col_a") === df2("col_a") && df1("col_b") === df2("col_b"), "i
 | 5L|  eee|  555|55L|  eee|  555|
 +---+-----+-----+---+-----+-----+
 ```
-- The syntax is clearer and more straightforward.
+- The syntax is clearer and more concise.
 - The join columns will only appear once in the output.
 
 However, the equality test is not [null safe](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/Column.html#%3C=%3E(other:Any):org.apache.spark.sql.Column), meaning in our example that the row of df1 with `id1 == 7L` will not be joined to the row of df2 with `id2 == 77L` (because for the [standard equality test](https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/Column.html#===(other:Any):org.apache.spark.sql.Column), `(null, 777) != (null, 777)`).
