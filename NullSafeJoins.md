@@ -125,7 +125,7 @@ joinNullSafe(df1, df2, Seq("col_a", "col_b"), "inner").show
 
 ## Appendix
 
-Here is an alternative version of the null safe equi-join, which is based on the property that the equality test between two array of columns is null safe by default.
+Here is an alternative version of the null safe equi-join, which is based on the property that the equality test between two arrays of columns is null safe by default.
 
 ```scala
 // Null safe join - alternative solution
@@ -142,9 +142,9 @@ df1.join(df2, array(df1("col_a"), df1("col_b")) === array(df2("col_a"), df2("col
 ```
 We can see that:
 - The equality test is null safe, i.e. `(null, 777) == (null, 777)`.
-- But the join columns appear twice in the output.
+- But the join columns appears twice in the output.
 
-This can also be improved like the first solution, i.e. deduplicate the join columns and generalize them to any sequence of columns:
+This can also be improved like the first solution, i.e. we can deduplicate the join columns and generalize them to any sequence of columns:
 
 ```scala
 import org.apache.spark.sql.DataFrame
