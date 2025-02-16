@@ -77,7 +77,7 @@ However, the equality test is not [null safe](https://spark.apache.org/docs/late
 
 Let's first try with a join expression using null safe equality tests:
 ```scala
-// Null safe equi-join
+// Null safe join
 // Join between df1 and df2 using a join expression with null safe equality tests between columns.
 df1.join(df2, df1("col_a") <=> df2("col_a") && df1("col_b") <=> df2("col_b"), "inner").show
 +---+-----+-----+---+-----+-----+
@@ -124,7 +124,7 @@ joinNullSafe(df1, df2, Seq("col_a", "col_b"), "inner").show
 
 Here is an alternative version of the null safe equi-join, which is based on the property that the equality test between two array of columns is null safe by default!
 ```scala
-// Null safe equi-join - alternative solution
+// Null safe join - alternative solution
 // Join between df1 and df2 using a join expression with an equality test between array of columns.
 df1.join(df2, array(df1("col_a"), df1("col_b")) === array(df2("col_a"), df2("col_b")), "inner").show
 +---+-----+-----+---+-----+-----+
