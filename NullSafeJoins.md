@@ -93,7 +93,7 @@ df1.join(df2, df1("col_a") <=> df2("col_a") && df1("col_b") <=> df2("col_b"), "i
 ```
 We can see that:
 - The equality test is null safe, i.e. `(null, 777) == (null, 777)`.
-- But the join columns appear twice in the output.
+- But the join columns appears twice in the output.
 
 Let's now try to implement it so that:
 - It can be generalized to any sequence of columns.
