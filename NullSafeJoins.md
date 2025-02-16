@@ -140,7 +140,7 @@ We can see that:
 - The equality test is null safe, i.e. `(null, 777) == (null, 777)`.
 - But the join columns appear twice in the output.
 
-This can also be implemented in a more generic way which also deduplicates join columns:
+This can also be improved like the first solution, i.e. deduplicates the join columns and generalized them to any sequence of columns:
 ```scala
 import org.apache.spark.sql.DataFrame
 
