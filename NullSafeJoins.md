@@ -97,7 +97,7 @@ We can see that:
 
 Let's now try to implement it so that:
 - It can be generalized to any sequence of columns.
-- The join columns appear only once in the output.
+- The join columns appears only once in the output.
 
 ```scala
 import org.apache.spark.sql.DataFrame
